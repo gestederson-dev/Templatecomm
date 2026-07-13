@@ -8,8 +8,8 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   const settings = await getSiteSettings();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <ThemeInjector primaryColor={settings?.primary_color ?? "#1e40af"} secondaryColor={settings?.secondary_color ?? "#f59e0b"} />
+    <div className="flex min-h-full flex-1 flex-col bg-paper font-[family-name:var(--font-body)] text-ink">
+      <ThemeInjector primaryColor={settings?.primary_color ?? "#860531"} secondaryColor={settings?.secondary_color ?? "#f39a00"} />
       <CartHydration />
       <SiteHeader />
       <main className="flex-1">{children}</main>

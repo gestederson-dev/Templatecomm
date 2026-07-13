@@ -10,6 +10,17 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --font-display: var(--font-bricolage);
+  --font-serif: var(--font-fraunces);
+  --font-body: var(--font-inter);
+  --color-wine: var(--wine);
+  --color-wine-deep: var(--wine-deep);
+  --color-wine-lite: var(--wine-lite);
+  --color-amber: var(--amber);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-wine-tint: var(--wine-tint);
+  --color-amber-tint: var(--amber-tint);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -55,10 +66,10 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --primary: #860531;
+  --primary-foreground: #ffffff;
+  --secondary: #f39a00;
+  --secondary-foreground: #0a0a0a;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -66,7 +77,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: #860531;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -81,6 +92,19 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Salmar Personalizados — identidade visual (design-system.md) */
+  --wine: #860531;
+  --wine-deep: #5c0323;
+  --wine-lite: #a8214a;
+  --amber: #f39a00;
+  --ink: #0a0a0a;
+  --paper: #f0f1f0;
+  --wine-tint: rgba(134, 5, 49, 0.06);
+  --amber-tint: rgba(243, 154, 0, 0.14);
+  --line: rgba(10, 10, 10, 0.1);
+  --shadow-brand: 0 1px 2px rgba(10, 10, 10, 0.04), 0 12px 30px -12px rgba(92, 3, 35, 0.18);
+  --shadow-brand-lift: 0 2px 4px rgba(10, 10, 10, 0.05), 0 24px 48px -16px rgba(92, 3, 35, 0.3);
 }
 
 .dark {
@@ -126,5 +150,181 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* ==========================================================
+   Salmar Personalizados — identidade visual (design-system.md)
+   Movimento: um momento orquestrado, não efeitos espalhados.
+   Tudo aqui respeita prefers-reduced-motion (regra no final).
+   ========================================================== */
+
+.salmar-facets {
+  position: relative;
+}
+.salmar-facets::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(60deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-60deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 26px);
+}
+
+.salmar-rise {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: salmar-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+.salmar-rise.d1 {
+  animation-delay: 0.05s;
+}
+.salmar-rise.d2 {
+  animation-delay: 0.18s;
+}
+.salmar-rise.d3 {
+  animation-delay: 0.31s;
+}
+.salmar-rise.d4 {
+  animation-delay: 0.44s;
+}
+.salmar-rise.d5 {
+  animation-delay: 0.57s;
+}
+@keyframes salmar-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.salmar-underline {
+  position: relative;
+  color: var(--wine);
+  white-space: nowrap;
+}
+.salmar-underline::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  bottom: 0.05em;
+  height: 0.32em;
+  background: var(--amber);
+  opacity: 0.9;
+  z-index: -1;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: salmar-ink 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 1.15s forwards;
+}
+@keyframes salmar-ink {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.salmar-halo {
+  animation: salmar-breathe 7s ease-in-out infinite;
+}
+@keyframes salmar-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+.salmar-gem {
+  animation: salmar-float 6s ease-in-out infinite;
+  filter: drop-shadow(0 26px 36px rgba(92, 3, 35, 0.3));
+}
+@keyframes salmar-float {
+  0%,
+  100% {
+    transform: translateY(-9px);
+  }
+  50% {
+    transform: translateY(9px);
+  }
+}
+
+.salmar-chip {
+  animation: salmar-float 6s ease-in-out infinite;
+}
+
+.salmar-glint {
+  animation: salmar-twinkle 2.6s ease-in-out infinite;
+}
+@keyframes salmar-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.5) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(20deg);
+  }
+}
+
+.salmar-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.salmar-reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+.salmar-stagger > * {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.salmar-stagger.in > * {
+  opacity: 1;
+  transform: none;
+}
+.salmar-stagger.in > *:nth-child(2) {
+  transition-delay: 0.08s;
+}
+.salmar-stagger.in > *:nth-child(3) {
+  transition-delay: 0.16s;
+}
+.salmar-stagger.in > *:nth-child(4) {
+  transition-delay: 0.24s;
+}
+.salmar-stagger.in > *:nth-child(5) {
+  transition-delay: 0.32s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salmar-rise,
+  .salmar-halo,
+  .salmar-gem,
+  .salmar-chip,
+  .salmar-glint,
+  .salmar-underline::after {
+    animation: none !important;
+  }
+  .salmar-rise {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .salmar-underline::after {
+    transform: scaleX(1) !important;
+  }
+  .salmar-reveal,
+  .salmar-stagger > * {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

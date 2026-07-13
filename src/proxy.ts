@@ -9,6 +9,11 @@ function requireEnv(name: string): string {
   return value;
 }
 
+/** pathname === prefix ou começa com "prefix/" — evita "/contato" casar com prefixo "/conta". */
+function matchesRoute(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 /**
  * Roda em toda request: refresca a sessão (troca token expirado por um novo,
  * grava cookie atualizado) e protege /conta (autenticado) e /admin (role
@@ -41,8 +46,8 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const precisaAuth = pathname.startsWith("/conta") || pathname.startsWith("/checkout");
-  const precisaAdmin = pathname.startsWith("/admin");
+  const precisaAuth = matchesRoute(pathname, "/conta") || matchesRoute(pathname, "/checkout");
+  const precisaAdmin = matchesRoute(pathname, "/admin");
 
   if ((precisaAuth || precisaAdmin) && !user) {
     const url = request.nextUrl.clone();

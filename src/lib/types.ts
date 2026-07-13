@@ -93,6 +93,20 @@ export type Quote = {
 
 export type QuoteWithItems = Quote & { items: QuoteItem[] };
 
+export type CouponType = "percent" | "fixed";
+
+export type Coupon = {
+  id: string;
+  code: string;
+  type: CouponType;
+  value: number;
+  min_order: number;
+  usage_limit: number | null;
+  used_count: number;
+  valid_until: string | null;
+  is_active: boolean;
+};
+
 export type Category = {
   id: string;
   name: string;

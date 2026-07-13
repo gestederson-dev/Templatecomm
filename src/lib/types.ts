@@ -64,6 +64,35 @@ export type Order = {
 
 export type OrderWithItems = Order & { items: OrderItem[] };
 
+export type QuoteStatus = "requested" | "quoted" | "approved" | "rejected" | "expired" | "converted";
+
+export type QuoteItem = {
+  id: string;
+  quote_id: string;
+  product_id: string | null;
+  product_name: string;
+  quantity: number;
+  customization: Record<string, string> | null;
+  requested_notes: string | null;
+  unit_price: number | null;
+};
+
+export type Quote = {
+  id: string;
+  quote_number: string;
+  profile_id: string | null;
+  status: QuoteStatus;
+  customer_message: string | null;
+  admin_response: string | null;
+  quoted_total: number | null;
+  valid_until: string | null;
+  converted_order_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuoteWithItems = Quote & { items: QuoteItem[] };
+
 export type Category = {
   id: string;
   name: string;

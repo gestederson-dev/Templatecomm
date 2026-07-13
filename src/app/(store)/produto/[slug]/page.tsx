@@ -7,8 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { PriceTiersTable } from "@/components/store/price-tiers-table";
 import { AddToCartButton } from "@/components/store/add-to-cart-button";
+import { QuoteRequestForm } from "@/components/store/quote-request-form";
 import { getProductBySlug } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
+import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -21,6 +23,11 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
   const product = await getProductBySlug(slug);
 
   if (!product) notFound();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -72,26 +79,28 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
 
               {product.price_tiers.length > 0 ? <PriceTiersTable tiers={product.price_tiers} /> : null}
 
-              {product.customization_options.length > 0 ? (
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">Personalização disponível</span>
-                  <ul className="flex flex-wrap gap-2">
-                    {product.customization_options.map((option) => (
-                      <li key={option.id}>
-                        <Badge variant="outline">
-                          {option.name}
-                          {option.required ? " *" : ""}
-                        </Badge>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-
-              <Button disabled variant="secondary" className="w-full">
-                Solicitar orçamento
-              </Button>
-              <p className="text-xs text-muted-foreground">Fluxo de orçamento chega em fase futura.</p>
+              {user ? (
+                <QuoteRequestForm productId={product.id} minQuantity={product.min_quote_quantity} options={product.customization_options} userId={user.id} />
+              ) : (
+                <>
+                  {product.customization_options.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-medium text-muted-foreground">Personalização disponível</span>
+                      <ul className="flex flex-wrap gap-2">
+                        {product.customization_options.map((option) => (
+                          <li key={option.id}>
+                            <Badge variant="outline">
+                              {option.name}
+                              {option.required ? " *" : ""}
+                            </Badge>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  <Button render={<Link href={`/login?next=/produto/${product.slug}`}>Entrar para solicitar orçamento</Link>} variant="secondary" className="w-full" />
+                </>
+              )}
             </div>
           ) : null}
 

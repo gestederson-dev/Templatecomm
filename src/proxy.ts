@@ -41,7 +41,7 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const precisaAuth = pathname.startsWith("/conta");
+  const precisaAuth = pathname.startsWith("/conta") || pathname.startsWith("/checkout");
   const precisaAdmin = pathname.startsWith("/admin");
 
   if ((precisaAuth || precisaAdmin) && !user) {

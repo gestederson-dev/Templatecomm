@@ -28,6 +28,42 @@ export type Address = {
   created_at: string;
 };
 
+export type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "delivered" | "canceled";
+export type OrderOrigin = "direct" | "quote";
+
+export type OrderItem = {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  customization: Record<string, string> | null;
+  total: number;
+};
+
+export type Order = {
+  id: string;
+  order_number: string;
+  profile_id: string | null;
+  status: OrderStatus;
+  origin: OrderOrigin;
+  subtotal: number;
+  shipping_cost: number;
+  discount: number;
+  total: number;
+  shipping_address: Record<string, string> | null;
+  payment_method: string | null;
+  payment_id: string | null;
+  payment_status: string | null;
+  tracking_code: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrderWithItems = Order & { items: OrderItem[] };
+
 export type Category = {
   id: string;
   name: string;

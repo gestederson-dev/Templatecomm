@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCategories, getSiteSettings } from "@/lib/catalog";
 import { createClient } from "@/lib/supabase/server";
+import { CartLink } from "@/components/store/cart-link";
 
 export async function SiteHeader() {
   const supabase = await createClient();
@@ -36,6 +37,7 @@ export async function SiteHeader() {
               <Button render={<Link href="/login">Entrar</Link>} size="sm" variant="outline" />
             )}
             <Button render={<Link href="/produtos?quote=1">Peça seu orçamento</Link>} size="sm" />
+            <CartLink />
           </div>
         </div>
 

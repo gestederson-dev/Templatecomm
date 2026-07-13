@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { PriceTiersTable } from "@/components/store/price-tiers-table";
+import { AddToCartButton } from "@/components/store/add-to-cart-button";
 import { getProductBySlug } from "@/lib/catalog";
 import { formatBRL } from "@/lib/format";
 
@@ -46,10 +47,19 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
                 <span className="text-sm font-medium">Compra direta</span>
                 {product.base_price != null ? <span className="text-xl font-semibold tabular-nums">{formatBRL(product.base_price)}</span> : null}
               </div>
-              <Button disabled className="w-full">
-                Adicionar ao carrinho
-              </Button>
-              <p className="text-xs text-muted-foreground">Carrinho e checkout chegam na próxima fase.</p>
+              {product.base_price != null ? (
+                <AddToCartButton
+                  productId={product.id}
+                  name={product.name}
+                  slug={product.slug}
+                  unitPrice={product.base_price}
+                  imageUrl={product.images[0]?.url ?? null}
+                />
+              ) : (
+                <Button disabled className="w-full">
+                  Preço sob consulta
+                </Button>
+              )}
             </div>
           ) : null}
 

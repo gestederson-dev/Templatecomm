@@ -15,14 +15,18 @@ export function LogoUpload({ currentUrl }: { currentUrl: string | null }) {
     setUploading(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.set("file", file);
-    const result = await uploadLogoAction(formData);
-
-    setUploading(false);
-    if ("error" in result) setError(result.error);
-    else setUrl(result.url);
-    if (inputRef.current) inputRef.current.value = "";
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadLogoAction(formData);
+      if ("error" in result) setError(result.error);
+      else setUrl(result.url);
+    } catch {
+      setError("Falha ao enviar a imagem. Verifique o tamanho do arquivo e tente de novo.");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
   }
 
   return (

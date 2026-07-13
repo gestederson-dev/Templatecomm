@@ -8,16 +8,24 @@ import type { ProductImage } from "@/lib/types";
 
 export function ProductImages({ productId, images }: { productId: string; images: ProductImage[] }) {
   const [pending, startTransition] = useTransition();
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleUpload(file: File) {
     setError(null);
-    const formData = new FormData();
-    formData.set("file", file);
-    const result = await uploadProductImageAction(productId, formData);
-    if (result?.error) setError(result.error);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadProductImageAction(productId, formData);
+      if (result?.error) setError(result.error);
+    } catch {
+      setError("Falha ao enviar a imagem. Verifique o tamanho do arquivo e tente de novo.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   return (
@@ -54,12 +62,14 @@ export function ProductImages({ productId, images }: { productId: string; images
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        disabled={uploading}
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) handleUpload(file);
         }}
         className="text-sm"
       />
+      {uploading ? <span className="text-xs text-muted-foreground">Enviando imagem...</span> : null}
       {pending ? <span className="text-xs text-muted-foreground">Atualizando...</span> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>

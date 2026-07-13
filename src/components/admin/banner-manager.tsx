@@ -17,10 +17,15 @@ export function BannerManager({ banners }: { banners: Banner[] }) {
   async function handleSubmit(formData: FormData) {
     setUploading(true);
     setError(null);
-    const result = await createBannerAction(formData);
-    setUploading(false);
-    if (result?.error) setError(result.error);
-    else formRef.current?.reset();
+    try {
+      const result = await createBannerAction(formData);
+      if (result?.error) setError(result.error);
+      else formRef.current?.reset();
+    } catch {
+      setError("Falha ao enviar a imagem. Verifique o tamanho do arquivo e tente de novo.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (

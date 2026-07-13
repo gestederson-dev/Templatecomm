@@ -21,7 +21,14 @@ function toSearchParams(params: SearchParams): URLSearchParams {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
-  return { title: category?.name ?? "Categoria" };
+  if (!category) return { title: "Categoria" };
+
+  const description = category.description ?? `${category.name} — Salmar Brindes.`;
+  return {
+    title: category.name,
+    description,
+    openGraph: { title: category.name, description, type: "website" },
+  };
 }
 
 export default async function CategoriaPage({

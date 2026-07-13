@@ -13,11 +13,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "Salmar Brindes",
     template: "%s | Salmar Brindes",
   },
   description: "Brindes corporativos e itens promocionais personalizados. Venda direta e orçamento sob medida para sua empresa.",
+  openGraph: {
+    siteName: "Salmar Brindes",
+    type: "website",
+    locale: "pt_BR",
+  },
 };
 
 export default function RootLayout({

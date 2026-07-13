@@ -5,13 +5,21 @@ import { createClient } from "@/lib/supabase/server";
 
 export type ActionState = { error: string } | { success: true } | undefined;
 
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+/** primary_color/secondary_color vão direto para um <style> (ThemeInjector) — nunca aceitar algo que não seja #rrggbb. */
+function safeHexColor(value: FormDataEntryValue | null, fallback: string): string {
+  const text = String(value ?? "");
+  return HEX_COLOR.test(text) ? text : fallback;
+}
+
 export async function saveSiteSettingsAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
 
   const payload = {
     site_name: String(formData.get("siteName") ?? "").trim() || "Salmar Brindes",
-    primary_color: String(formData.get("primaryColor") ?? "#1e40af"),
-    secondary_color: String(formData.get("secondaryColor") ?? "#f59e0b"),
+    primary_color: safeHexColor(formData.get("primaryColor"), "#1e40af"),
+    secondary_color: safeHexColor(formData.get("secondaryColor"), "#f59e0b"),
     contact_email: String(formData.get("contactEmail") ?? "").trim() || null,
     contact_phone: String(formData.get("contactPhone") ?? "").trim() || null,
     whatsapp: String(formData.get("whatsapp") ?? "").trim() || null,

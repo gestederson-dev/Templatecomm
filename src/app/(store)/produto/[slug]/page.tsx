@@ -15,7 +15,21 @@ import { createClient } from "@/lib/supabase/server";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-  return { title: product?.name ?? "Produto" };
+  if (!product) return { title: "Produto" };
+
+  const description = product.description ?? `${product.name} — Salmar Brindes.`;
+  const image = product.images[0]?.url;
+
+  return {
+    title: product.name,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      type: "website",
+      images: image ? [{ url: image }] : undefined,
+    },
+  };
 }
 
 export default async function ProdutoPage({ params }: { params: Promise<{ slug: string }> }) {

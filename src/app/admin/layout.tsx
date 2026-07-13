@@ -14,23 +14,27 @@ const NAV = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-full flex-1">
-      <aside className="w-56 shrink-0 border-r bg-muted/20 p-4">
-        <Link href="/" className="mb-6 block text-lg font-semibold tracking-tight">
+    <div className="flex min-h-full flex-1 flex-col md:flex-row">
+      <aside className="shrink-0 border-b bg-muted/20 p-4 md:w-56 md:border-b-0 md:border-r">
+        <Link href="/" className="mb-4 block text-lg font-semibold tracking-tight md:mb-6">
           Salmar Admin
         </Link>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
           {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="shrink-0 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
               {item.label}
             </Link>
           ))}
         </nav>
-        <Link href="/" className="mt-6 block text-xs text-muted-foreground hover:text-foreground">
+        <Link href="/" className="mt-4 hidden text-xs text-muted-foreground hover:text-foreground md:mt-6 md:block">
           ← Voltar à loja
         </Link>
       </aside>
-      <main className="flex-1 p-8">{children}</main>
+      <main className="flex-1 p-4 sm:p-8">{children}</main>
     </div>
   );
 }

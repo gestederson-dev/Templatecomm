@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSiteSettings } from "@/lib/catalog";
 
 export async function SiteFooter() {
@@ -27,7 +28,23 @@ export async function SiteFooter() {
 
         <div>
           <p className="font-semibold">Institucional</p>
-          <p className="mt-2 text-muted-foreground">Políticas e páginas institucionais em breve.</p>
+          <ul className="mt-2 space-y-1 text-muted-foreground">
+            <li>
+              <Link href="/sobre" className="hover:text-foreground">
+                Sobre
+              </Link>
+            </li>
+            <li>
+              <Link href="/contato" className="hover:text-foreground">
+                Contato
+              </Link>
+            </li>
+            <li>
+              <Link href="/politicas" className="hover:text-foreground">
+                Políticas
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
 

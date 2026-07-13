@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCategories, getSiteSettings } from "@/lib/catalog";
@@ -15,7 +16,8 @@ export async function SiteHeader() {
     <header className="border-b bg-background">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href="/" className="text-xl font-semibold tracking-tight">
+          <Link href="/" className="flex items-center gap-2 text-xl font-semibold tracking-tight">
+            {settings?.logo_url ? <Image src={settings.logo_url} alt={siteName} width={32} height={32} className="rounded-sm object-contain" /> : null}
             {siteName}
           </Link>
 

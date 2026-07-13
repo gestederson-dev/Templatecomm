@@ -2,10 +2,13 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getCategories, getSiteSettings } from "@/lib/catalog";
+import { createClient } from "@/lib/supabase/server";
 
 export async function SiteHeader() {
-  const [categories, settings] = await Promise.all([getCategories(), getSiteSettings()]);
+  const supabase = await createClient();
+  const [categories, settings, userResult] = await Promise.all([getCategories(), getSiteSettings(), supabase.auth.getUser()]);
   const siteName = settings?.site_name ?? "Salmar Brindes";
+  const user = userResult.data.user;
 
   return (
     <header className="border-b bg-background">
@@ -19,7 +22,21 @@ export async function SiteHeader() {
             <Input type="search" name="q" placeholder="Buscar produtos..." aria-label="Buscar produtos" />
           </form>
 
-          <Button render={<Link href="/produtos?quote=1">Peça seu orçamento</Link>} size="sm" className="order-2 sm:order-3" />
+          <div className="order-2 flex items-center gap-2 sm:order-3">
+            {user ? (
+              <>
+                <Button render={<Link href="/conta">Minha conta</Link>} size="sm" variant="outline" />
+                <form action="/auth/logout" method="post">
+                  <Button type="submit" size="sm" variant="ghost">
+                    Sair
+                  </Button>
+                </form>
+              </>
+            ) : (
+              <Button render={<Link href="/login">Entrar</Link>} size="sm" variant="outline" />
+            )}
+            <Button render={<Link href="/produtos?quote=1">Peça seu orçamento</Link>} size="sm" />
+          </div>
         </div>
 
         {categories.length > 0 ? (

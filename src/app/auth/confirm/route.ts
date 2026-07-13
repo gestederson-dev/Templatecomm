@@ -1,0 +1,26 @@
+import type { EmailOtpType } from "@supabase/supabase-js";
+import { redirect } from "next/navigation";
+import type { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+/**
+ * Rota que o link de confirmação de e-mail (signup) aponta, via
+ * emailRedirectTo. O trigger handle_new_user já criou a linha em profiles
+ * no INSERT em auth.users — aqui só trocamos o token pela sessão de verdade.
+ */
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const tokenHash = searchParams.get("token_hash");
+  const type = searchParams.get("type") as EmailOtpType | null;
+  const next = searchParams.get("next") ?? "/";
+
+  if (tokenHash && type) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
+    if (!error) {
+      redirect(next);
+    }
+  }
+
+  redirect("/login?erro=link_invalido");
+}

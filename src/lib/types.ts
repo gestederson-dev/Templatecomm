@@ -1,3 +1,33 @@
+export type PersonType = "pf" | "pj";
+export type UserRole = "admin" | "customer";
+
+export type Profile = {
+  id: string;
+  role: UserRole;
+  full_name: string | null;
+  phone: string | null;
+  person_type: PersonType | null;
+  cpf: string | null;
+  cnpj: string | null;
+  company_name: string | null;
+  created_at: string;
+};
+
+export type Address = {
+  id: string;
+  profile_id: string;
+  label: string | null;
+  cep: string;
+  street: string;
+  number: string | null;
+  complement: string | null;
+  district: string | null;
+  city: string;
+  state: string;
+  is_default: boolean;
+  created_at: string;
+};
+
 export type Category = {
   id: string;
   name: string;

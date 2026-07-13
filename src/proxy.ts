@@ -11,12 +11,10 @@ function requireEnv(name: string): string {
 
 /**
  * Roda em toda request: refresca a sessão (troca token expirado por um novo,
- * grava cookie atualizado). Padrão recomendado do @supabase/ssr — Server
- * Components sozinhos não conseguem escrever cookie de forma confiável a
- * cada request, só o middleware consegue.
- *
- * Proteção de rota (/admin, /conta) entra na Fase 2, junto com Auth — aqui é
- * só o refresh de sessão que todo o resto depende.
+ * grava cookie atualizado) e protege /conta (autenticado) e /admin (role
+ * admin). Padrão recomendado do @supabase/ssr — Server Components sozinhos
+ * não conseguem escrever cookie de forma confiável a cada request, só o
+ * proxy consegue.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -38,7 +36,29 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const precisaAuth = pathname.startsWith("/conta");
+  const precisaAdmin = pathname.startsWith("/admin");
+
+  if ((precisaAuth || precisaAdmin) && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (precisaAdmin && user) {
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    if (profile?.role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
 
   return response;
 }

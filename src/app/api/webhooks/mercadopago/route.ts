@@ -2,6 +2,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPaymentProvider, type PaymentStatus } from "@/lib/payments";
+import { getUserEmail } from "@/lib/email/get-user-email";
+import { orderConfirmedEmail } from "@/lib/email/templates";
+import { sendEmail } from "@/lib/email/send";
 import type { OrderStatus } from "@/lib/types";
 
 const STATUS_TO_ORDER_STATUS: Partial<Record<PaymentStatus, OrderStatus>> = {
@@ -70,14 +73,24 @@ export async function POST(request: NextRequest) {
   const orderStatus = STATUS_TO_ORDER_STATUS[status];
   const supabase = createAdminClient();
 
-  await supabase
+  const { data: order } = await supabase
     .from("orders")
     .update({
       payment_id: dataId,
       payment_status: status,
       ...(orderStatus ? { status: orderStatus } : {}),
     })
-    .eq("id", externalReference);
+    .eq("id", externalReference)
+    .select("order_number, total, profile_id")
+    .maybeSingle();
+
+  if (orderStatus === "paid" && order?.profile_id) {
+    const email = await getUserEmail(order.profile_id);
+    if (email) {
+      const { subject, html } = orderConfirmedEmail(order.order_number, order.total);
+      await sendEmail(email, subject, html);
+    }
+  }
 
   return NextResponse.json({ received: true });
 }

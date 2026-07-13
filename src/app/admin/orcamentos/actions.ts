@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getUserEmail } from "@/lib/email/get-user-email";
+import { quoteSentEmail } from "@/lib/email/templates";
+import { sendEmail } from "@/lib/email/send";
 import type { QuoteItem } from "@/lib/types";
 
 export type ActionState = { error: string } | undefined;
@@ -26,7 +29,7 @@ export async function sendQuoteAction(_prevState: ActionState, formData: FormDat
 
   const quotedTotal = items.reduce((sum, item) => sum + (item.unit_price ?? 0) * item.quantity, 0);
 
-  const { error } = await supabase
+  const { data: quote, error } = await supabase
     .from("quotes")
     .update({
       status: "quoted",
@@ -34,9 +37,19 @@ export async function sendQuoteAction(_prevState: ActionState, formData: FormDat
       admin_response: adminResponse || null,
       valid_until: validUntil || null,
     })
-    .eq("id", quoteId);
+    .eq("id", quoteId)
+    .select("quote_number, profile_id")
+    .single();
 
   if (error) return { error: error.message };
+
+  if (quote.profile_id) {
+    const email = await getUserEmail(quote.profile_id);
+    if (email) {
+      const { subject, html } = quoteSentEmail(quote.quote_number, quotedTotal, validUntil || null);
+      await sendEmail(email, subject, html);
+    }
+  }
 
   revalidatePath(`/admin/orcamentos/${quoteId}`);
   revalidatePath("/admin/orcamentos");

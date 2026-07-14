@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { AddressForm } from "@/components/account/address-form";
-import { deleteAddressAction } from "@/app/conta/actions";
+import { deleteAddressAction } from "@/app/(store)/conta/actions";
+import { btnOutline } from "@/components/store/button-styles";
+import { storeCard } from "@/components/store/ui-styles";
 import type { Address } from "@/lib/types";
 
 export function AddressManager({ addresses }: { addresses: Address[] }) {
@@ -17,25 +17,25 @@ export function AddressManager({ addresses }: { addresses: Address[] }) {
         editingId === address.id ? (
           <AddressForm key={address.id} address={address} onDone={() => setEditingId(null)} />
         ) : (
-          <div key={address.id} className="flex flex-col gap-2 rounded-lg border p-4">
+          <div key={address.id} className={`${storeCard} flex flex-col gap-2`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{address.label || "Endereço"}</span>
-                {address.is_default ? <Badge variant="secondary">Padrão</Badge> : null}
+                <span className="text-sm font-semibold text-ink">{address.label || "Endereço"}</span>
+                {address.is_default ? <span className="rounded-full bg-wine-tint px-2.5 py-0.5 text-[11.5px] font-semibold text-wine">Padrão</span> : null}
               </div>
-              <div className="flex gap-2">
-                <Button type="button" size="sm" variant="ghost" onClick={() => setEditingId(address.id)}>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setEditingId(address.id)} className="text-sm font-semibold text-wine hover:underline">
                   Editar
-                </Button>
+                </button>
                 <form action={deleteAddressAction}>
                   <input type="hidden" name="addressId" value={address.id} />
-                  <Button type="submit" size="sm" variant="ghost" className="text-destructive">
+                  <button type="submit" className="text-sm font-semibold text-destructive hover:underline">
                     Excluir
-                  </Button>
+                  </button>
                 </form>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink/62">
               {address.street}
               {address.number ? `, ${address.number}` : ""}
               {address.complement ? ` — ${address.complement}` : ""}
@@ -47,14 +47,14 @@ export function AddressManager({ addresses }: { addresses: Address[] }) {
         ),
       )}
 
-      {addresses.length === 0 && !addingNew ? <p className="text-sm text-muted-foreground">Nenhum endereço cadastrado ainda.</p> : null}
+      {addresses.length === 0 && !addingNew ? <p className="text-sm text-ink/52">Nenhum endereço cadastrado ainda.</p> : null}
 
       {addingNew ? (
         <AddressForm onDone={() => setAddingNew(false)} />
       ) : (
-        <Button type="button" variant="outline" className="w-fit" onClick={() => setAddingNew(true)}>
+        <button type="button" onClick={() => setAddingNew(true)} className={`${btnOutline} w-fit`}>
           + Novo endereço
-        </Button>
+        </button>
       )}
     </div>
   );

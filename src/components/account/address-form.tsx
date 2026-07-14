@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { saveAddressAction, type ActionState } from "@/app/conta/actions";
+import { saveAddressAction, type ActionState } from "@/app/(store)/conta/actions";
+import { btnOutline, btnWine } from "@/components/store/button-styles";
+import { storeCard, storeInput, storeLabel } from "@/components/store/ui-styles";
 import type { Address } from "@/lib/types";
 
 function formatCep(value: string): string {
@@ -47,21 +47,21 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone?: (
   }, [state]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4 rounded-lg border p-4">
+    <form action={formAction} className={`${storeCard} flex flex-col gap-4`}>
       {address ? <input type="hidden" name="addressId" value={address.id} /> : null}
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="label" className="text-sm font-medium">
+      <div>
+        <label htmlFor="label" className={storeLabel}>
           Identificação (opcional)
         </label>
-        <Input id="label" name="label" placeholder="Casa, Trabalho..." defaultValue={address?.label ?? ""} />
+        <input id="label" name="label" placeholder="Casa, Trabalho..." defaultValue={address?.label ?? ""} className={storeInput} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="cep" className="text-sm font-medium">
+      <div>
+        <label htmlFor="cep" className={storeLabel}>
           CEP
         </label>
-        <Input
+        <input
           id="cep"
           name="cep"
           required
@@ -69,69 +69,69 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone?: (
           onChange={(event) => setCep(formatCep(event.target.value))}
           onBlur={(event) => buscarCep(event.target.value)}
           placeholder="00000-000"
-          className="w-32"
+          className={`${storeInput} w-32`}
         />
-        {buscandoCep ? <span className="text-xs text-muted-foreground">Buscando endereço...</span> : null}
+        {buscandoCep ? <span className="mt-1 block text-xs text-ink/50">Buscando endereço...</span> : null}
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="col-span-2 flex flex-col gap-1.5">
-          <label htmlFor="street" className="text-sm font-medium">
+        <div className="col-span-2">
+          <label htmlFor="street" className={storeLabel}>
             Endereço
           </label>
-          <Input id="street" name="street" required value={street} onChange={(event) => setStreet(event.target.value)} />
+          <input id="street" name="street" required value={street} onChange={(event) => setStreet(event.target.value)} className={storeInput} />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="number" className="text-sm font-medium">
+        <div>
+          <label htmlFor="number" className={storeLabel}>
             Número
           </label>
-          <Input id="number" name="number" defaultValue={address?.number ?? ""} />
+          <input id="number" name="number" defaultValue={address?.number ?? ""} className={storeInput} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="complement" className="text-sm font-medium">
+      <div>
+        <label htmlFor="complement" className={storeLabel}>
           Complemento
         </label>
-        <Input id="complement" name="complement" defaultValue={address?.complement ?? ""} />
+        <input id="complement" name="complement" defaultValue={address?.complement ?? ""} className={storeInput} />
       </div>
 
       <div className="grid grid-cols-4 gap-3">
-        <div className="col-span-2 flex flex-col gap-1.5">
-          <label htmlFor="district" className="text-sm font-medium">
+        <div className="col-span-2">
+          <label htmlFor="district" className={storeLabel}>
             Bairro
           </label>
-          <Input id="district" name="district" value={district} onChange={(event) => setDistrict(event.target.value)} />
+          <input id="district" name="district" value={district} onChange={(event) => setDistrict(event.target.value)} className={storeInput} />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="city" className="text-sm font-medium">
+        <div>
+          <label htmlFor="city" className={storeLabel}>
             Cidade
           </label>
-          <Input id="city" name="city" required value={city} onChange={(event) => setCity(event.target.value)} />
+          <input id="city" name="city" required value={city} onChange={(event) => setCity(event.target.value)} className={storeInput} />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="state" className="text-sm font-medium">
+        <div>
+          <label htmlFor="state" className={storeLabel}>
             UF
           </label>
-          <Input id="state" name="state" required maxLength={2} value={uf} onChange={(event) => setUf(event.target.value.toUpperCase())} />
+          <input id="state" name="state" required maxLength={2} value={uf} onChange={(event) => setUf(event.target.value.toUpperCase())} className={storeInput} />
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="isDefault" defaultChecked={address?.is_default} className="h-4 w-4 rounded border-input" />
+      <label className="flex items-center gap-2 text-sm text-ink/78">
+        <input type="checkbox" name="isDefault" defaultChecked={address?.is_default} className="h-4 w-4 rounded border-ink/25 accent-wine" />
         Usar como endereço padrão
       </label>
 
       {state && "error" in state ? <p className="text-sm text-destructive">{state.error}</p> : null}
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={pending}>
+      <div className="flex gap-2.5">
+        <button type="submit" disabled={pending} className={`${btnWine} disabled:pointer-events-none disabled:opacity-50`}>
           {pending ? "Salvando..." : "Salvar endereço"}
-        </Button>
+        </button>
         {onDone ? (
-          <Button type="button" variant="ghost" onClick={onDone}>
+          <button type="button" onClick={onDone} className={btnOutline}>
             Cancelar
-          </Button>
+          </button>
         ) : null}
       </div>
     </form>

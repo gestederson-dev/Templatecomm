@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { cartTotalPrice, useCartStore } from "@/stores/cart";
 import { formatBRL } from "@/lib/format";
+import { btnOutline, btnWine } from "@/components/store/button-styles";
+import { storeCard, storeSectionTitle } from "@/components/store/ui-styles";
 import type { Address } from "@/lib/types";
 import type { ShippingOption } from "@/lib/shipping";
 import { createOrderAction, quoteShippingAction } from "@/app/checkout/actions";
@@ -26,17 +27,20 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-        Seu carrinho está vazio. <Link href="/produtos" className="underline">Ver catálogo</Link>
+      <div className="rounded-2xl border border-dashed border-ink/15 bg-white p-8 text-center text-sm text-ink/60">
+        Seu carrinho está vazio.{" "}
+        <Link href="/produtos" className="font-semibold text-wine hover:underline">
+          Ver catálogo
+        </Link>
       </div>
     );
   }
 
   if (addresses.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+      <div className="rounded-2xl border border-dashed border-ink/15 bg-white p-8 text-center text-sm text-ink/60">
         Cadastre um endereço de entrega antes de continuar.{" "}
-        <Link href="/conta/enderecos" className="underline">
+        <Link href="/conta/enderecos" className="font-semibold text-wine hover:underline">
           Adicionar endereço
         </Link>
       </div>
@@ -88,12 +92,17 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold">1. Endereço de entrega</h2>
-        <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-6">
+      <section className={`${storeCard} flex flex-col gap-4`}>
+        <h2 className={storeSectionTitle}>1. Endereço de entrega</h2>
+        <div className="flex flex-col gap-2.5">
           {addresses.map((address) => (
-            <label key={address.id} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm ${addressId === address.id ? "border-foreground" : ""}`}>
+            <label
+              key={address.id}
+              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 text-sm transition-colors ${
+                addressId === address.id ? "border-wine bg-wine-tint" : "border-ink/12 hover:border-ink/25"
+              }`}
+            >
               <input
                 type="radio"
                 name="address"
@@ -103,63 +112,70 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
                   setShippingOptions(null);
                   setShippingIndex(null);
                 }}
-                className="mt-1"
+                className="mt-1 accent-wine"
               />
               <span>
-                <span className="font-medium">{address.label || "Endereço"}</span>
+                <span className="font-semibold text-ink">{address.label || "Endereço"}</span>
                 <br />
-                {address.street}
-                {address.number ? `, ${address.number}` : ""} — {address.city}/{address.state} — CEP {address.cep}
+                <span className="text-ink/62">
+                  {address.street}
+                  {address.number ? `, ${address.number}` : ""} — {address.city}/{address.state} — CEP {address.cep}
+                </span>
               </span>
             </label>
           ))}
         </div>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold">2. Frete</h2>
-        <Button type="button" variant="outline" className="w-fit" onClick={handleCalcularFrete} disabled={loadingShipping}>
+      <section className={`${storeCard} flex flex-col gap-4`}>
+        <h2 className={storeSectionTitle}>2. Frete</h2>
+        <button type="button" className={`${btnOutline} w-fit`} onClick={handleCalcularFrete} disabled={loadingShipping}>
           {loadingShipping ? "Calculando..." : "Calcular frete"}
-        </Button>
+        </button>
 
         {shippingOptions ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {shippingOptions.map((option, index) => (
-              <label key={`${option.service}-${index}`} className={`flex cursor-pointer items-center justify-between rounded-lg border p-3 text-sm ${shippingIndex === index ? "border-foreground" : ""}`}>
+              <label
+                key={`${option.service}-${index}`}
+                className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 text-sm transition-colors ${
+                  shippingIndex === index ? "border-wine bg-wine-tint" : "border-ink/12 hover:border-ink/25"
+                }`}
+              >
                 <span className="flex items-center gap-3">
-                  <input type="radio" name="shipping" checked={shippingIndex === index} onChange={() => setShippingIndex(index)} />
-                  <span>
+                  <input type="radio" name="shipping" checked={shippingIndex === index} onChange={() => setShippingIndex(index)} className="accent-wine" />
+                  <span className="text-ink/85">
                     {option.service}
                     {option.deliveryDays ? ` — até ${option.deliveryDays} dias úteis` : ""}
                   </span>
                 </span>
-                <span className="font-medium tabular-nums">{formatBRL(option.price)}</span>
+                <span className="font-[family-name:var(--font-display)] font-semibold tabular-nums text-wine">{formatBRL(option.price)}</span>
               </label>
             ))}
           </div>
         ) : null}
       </section>
 
-      <section className="flex flex-col gap-2 rounded-lg border bg-muted/20 p-4 text-sm">
-        <div className="flex justify-between">
+      <section className={`${storeCard} flex flex-col gap-2 text-sm`}>
+        <div className="flex justify-between text-ink/70">
           <span>Subtotal</span>
           <span className="tabular-nums">{formatBRL(subtotal)}</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between text-ink/70">
           <span>Frete</span>
           <span className="tabular-nums">{shippingOption ? formatBRL(shippingOption.price) : "—"}</span>
         </div>
-        <div className="flex justify-between border-t pt-2 text-base font-semibold">
+        <div className="flex justify-between border-t border-ink/10 pt-2.5 text-base font-semibold text-ink">
           <span>Total</span>
-          <span className="tabular-nums">{formatBRL(total)}</span>
+          <span className="font-[family-name:var(--font-display)] tabular-nums text-wine">{formatBRL(total)}</span>
         </div>
       </section>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <Button size="lg" disabled={!shippingOption || submitting} onClick={handlePagar}>
+      <button type="button" className={`${btnWine} w-full py-3.5 text-base disabled:pointer-events-none disabled:opacity-50`} disabled={!shippingOption || submitting} onClick={handlePagar}>
         {submitting ? "Redirecionando..." : "Pagar com Mercado Pago"}
-      </Button>
+      </button>
     </div>
   );
 }

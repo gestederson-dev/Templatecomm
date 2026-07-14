@@ -1,35 +1,35 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { updateProfileAction, type ActionState } from "@/app/conta/actions";
+import { updateProfileAction, type ActionState } from "@/app/(store)/conta/actions";
+import { btnWine } from "@/components/store/button-styles";
+import { storeInput, storeLabel } from "@/components/store/ui-styles";
 
 export function ProfileForm({ fullName, phone }: { fullName: string; phone: string }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(updateProfileAction, undefined);
 
   return (
     <form action={formAction} className="flex max-w-sm flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="fullName" className="text-sm font-medium">
+      <div>
+        <label htmlFor="fullName" className={storeLabel}>
           Nome
         </label>
-        <Input id="fullName" name="fullName" defaultValue={fullName} required />
+        <input id="fullName" name="fullName" defaultValue={fullName} required className={storeInput} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="phone" className="text-sm font-medium">
+      <div>
+        <label htmlFor="phone" className={storeLabel}>
           Telefone / WhatsApp
         </label>
-        <Input id="phone" name="phone" defaultValue={phone} placeholder="(00) 00000-0000" />
+        <input id="phone" name="phone" defaultValue={phone} placeholder="(00) 00000-0000" className={storeInput} />
       </div>
 
       {state && "error" in state ? <p className="text-sm text-destructive">{state.error}</p> : null}
-      {state && "success" in state ? <p className="text-sm text-primary">Dados atualizados.</p> : null}
+      {state && "success" in state ? <p className="text-sm font-medium text-ok">Dados atualizados.</p> : null}
 
-      <Button type="submit" disabled={pending} className="w-fit">
+      <button type="submit" disabled={pending} className={`${btnWine} w-fit disabled:pointer-events-none disabled:opacity-50`}>
         {pending ? "Salvando..." : "Salvar"}
-      </Button>
+      </button>
     </form>
   );
 }

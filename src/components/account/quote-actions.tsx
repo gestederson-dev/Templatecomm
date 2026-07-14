@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { btnOutline, btnWine } from "@/components/store/button-styles";
 import { approveQuoteAction, rejectQuoteAction } from "@/lib/quote-actions";
 
 export function QuoteActions({ quoteId }: { quoteId: string }) {
@@ -33,13 +33,13 @@ export function QuoteActions({ quoteId }: { quoteId: string }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
-        <Button onClick={handleApprove} disabled={pending != null}>
+      <div className="flex gap-2.5">
+        <button type="button" onClick={handleApprove} disabled={pending != null} className={`${btnWine} disabled:pointer-events-none disabled:opacity-50`}>
           {pending === "approve" ? "Aprovando..." : "Aprovar orçamento"}
-        </Button>
-        <Button onClick={handleReject} variant="outline" disabled={pending != null}>
+        </button>
+        <button type="button" onClick={handleReject} disabled={pending != null} className={`${btnOutline} disabled:pointer-events-none disabled:opacity-50`}>
           {pending === "reject" ? "Rejeitando..." : "Rejeitar"}
-        </Button>
+        </button>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>

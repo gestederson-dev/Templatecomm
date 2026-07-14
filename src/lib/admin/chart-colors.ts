@@ -4,8 +4,8 @@
  */
 export const CATEGORICAL = ["#2a78d6", "#1baf7a", "#eda100", "#008300", "#4a3aa7", "#e34948", "#e87ba4", "#eb6834"] as const;
 
-/** Rampa sequencial azul (magnitude/ordinal), degraus 250→650. */
-export const SEQUENTIAL_BLUE = ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"] as const;
+/** Rampa sequencial vinho (magnitude/ordinal), degraus 250→650, ancorada nos tokens de marca. */
+export const SEQUENTIAL_WINE = ["#e3aec0", "#c56888", "#860531", "#690527", "#450219"] as const;
 
 export const STATUS_COLORS = {
   good: "#0ca30c",
@@ -14,7 +14,7 @@ export const STATUS_COLORS = {
   critical: "#d03b3b",
 } as const;
 
-export const CHART_GRID = "#e1e0d9";
-export const CHART_AXIS = "#c3c2b7";
-export const CHART_MUTED = "#898781";
-export const CHART_INK = "#52514e";
+export const CHART_GRID = "rgba(10, 10, 10, 0.08)";
+export const CHART_AXIS = "rgba(10, 10, 10, 0.35)";
+export const CHART_MUTED = "rgba(10, 10, 10, 0.52)";
+export const CHART_INK = "#0a0a0a";

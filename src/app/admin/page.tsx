@@ -4,6 +4,7 @@ import { RevenueChart } from "@/components/admin/dashboard/revenue-chart";
 import { StatusChart } from "@/components/admin/dashboard/status-chart";
 import { TopProductsChart } from "@/components/admin/dashboard/top-products-chart";
 import { QuoteFunnelChart } from "@/components/admin/dashboard/quote-funnel-chart";
+import { adminCard } from "@/components/admin/ui-styles";
 import { getDashboardMetrics, periodFromDays, toISODate } from "@/lib/admin/dashboard";
 import { formatBRL } from "@/lib/format";
 
@@ -29,7 +30,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Dashboard</h1>
         <PeriodFilter period={period} from={fromParam ?? toISODate(from)} to={toParam ?? toISODate(to)} />
       </div>
 
@@ -42,21 +43,21 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <StatCard label="Novos clientes" value={String(metrics.newCustomers)} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-3 text-sm font-semibold">Faturamento no período</h2>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className={adminCard}>
+          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Faturamento no período</h2>
           <RevenueChart data={metrics.revenueByDay} />
         </div>
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-3 text-sm font-semibold">Pedidos por status</h2>
+        <div className={adminCard}>
+          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Pedidos por status</h2>
           <StatusChart data={metrics.ordersByStatus} />
         </div>
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-3 text-sm font-semibold">Top 10 produtos</h2>
+        <div className={adminCard}>
+          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Top 10 produtos</h2>
           <TopProductsChart data={metrics.topProducts} />
         </div>
-        <div className="rounded-lg border p-4">
-          <h2 className="mb-3 text-sm font-semibold">Funil de orçamentos</h2>
+        <div className={adminCard}>
+          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Funil de orçamentos</h2>
           <QuoteFunnelChart data={metrics.funnel} />
         </div>
       </div>

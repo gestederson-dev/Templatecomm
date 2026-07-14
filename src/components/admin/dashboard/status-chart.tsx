@@ -23,7 +23,7 @@ export function StatusChart({ data }: { data: { status: string; count: number }[
   }));
 
   if (data.length === 0) {
-    return <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Sem pedidos no período.</div>;
+    return <div className="flex h-64 items-center justify-center text-sm text-ink/52">Sem pedidos no período.</div>;
   }
 
   return (
@@ -32,7 +32,7 @@ export function StatusChart({ data }: { data: { status: string; count: number }[
         <CartesianGrid stroke={CHART_GRID} vertical={false} />
         <XAxis dataKey="label" stroke={CHART_AXIS} tick={{ fontSize: 12, fill: CHART_AXIS }} tickLine={false} axisLine={{ stroke: CHART_AXIS }} />
         <YAxis allowDecimals={false} stroke={CHART_AXIS} tick={{ fontSize: 12, fill: CHART_AXIS }} tickLine={false} axisLine={false} width={32} />
-        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 10, border: "1px solid var(--line)", boxShadow: "var(--shadow-panel)" }} />
         <Bar dataKey="count" name="Pedidos" radius={[4, 4, 0, 0]}>
           {chartData.map((entry) => (
             <Cell key={entry.status} fill={entry.color} />

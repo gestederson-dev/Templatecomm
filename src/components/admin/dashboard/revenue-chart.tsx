@@ -1,12 +1,12 @@
 "use client";
 
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CHART_AXIS, CHART_GRID, SEQUENTIAL_BLUE } from "@/lib/admin/chart-colors";
+import { CHART_AXIS, CHART_GRID, SEQUENTIAL_WINE } from "@/lib/admin/chart-colors";
 import { formatBRL } from "@/lib/format";
 
 export function RevenueChart({ data }: { data: { date: string; revenue: number }[] }) {
   if (data.length === 0) {
-    return <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">Sem faturamento no período.</div>;
+    return <div className="flex h-64 items-center justify-center text-sm text-ink/52">Sem faturamento no período.</div>;
   }
 
   return (
@@ -32,9 +32,9 @@ export function RevenueChart({ data }: { data: { date: string; revenue: number }
         <Tooltip
           formatter={(value) => formatBRL(Number(value))}
           labelFormatter={(value) => new Date(String(value)).toLocaleDateString("pt-BR")}
-          contentStyle={{ fontSize: 12, borderRadius: 8 }}
+          contentStyle={{ fontSize: 12, borderRadius: 10, border: "1px solid var(--line)", boxShadow: "var(--shadow-panel)" }}
         />
-        <Line type="monotone" dataKey="revenue" stroke={SEQUENTIAL_BLUE[2]} strokeWidth={2} dot={{ r: 3, fill: SEQUENTIAL_BLUE[2] }} name="Faturamento" />
+        <Line type="monotone" dataKey="revenue" stroke={SEQUENTIAL_WINE[2]} strokeWidth={2} dot={{ r: 3, fill: SEQUENTIAL_WINE[2] }} name="Faturamento" />
       </LineChart>
     </ResponsiveContainer>
   );

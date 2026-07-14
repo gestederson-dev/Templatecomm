@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { StatCard } from "@/components/admin/dashboard/stat-card";
 import { PeriodFilter } from "@/components/admin/dashboard/period-filter";
 import { RevenueAreaChart } from "@/components/admin/dashboard/revenue-area-chart";
 import { StatusDonut } from "@/components/admin/dashboard/status-donut";
 import { TopProductsChart } from "@/components/admin/dashboard/top-products-chart";
 import { QuoteFunnel } from "@/components/admin/dashboard/quote-funnel";
+import { RecentOrdersTable } from "@/components/admin/dashboard/recent-orders-table";
 import { adminCard } from "@/components/admin/ui-styles";
 import { getDashboardMetrics, periodFromDays, toISODate } from "@/lib/admin/dashboard";
 import { formatBRL } from "@/lib/format";
@@ -68,9 +70,23 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           <QuoteFunnel data={metrics.funnel} />
         </div>
         <div className={adminCard}>
-          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Top 10 produtos</h2>
+          <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Produtos mais vendidos</h2>
+          <p className="mb-4 mt-0.5 text-[12.5px] text-ink/52">Por unidades — no período</p>
           <TopProductsChart data={metrics.topProducts} />
         </div>
+      </div>
+
+      <div className={adminCard}>
+        <div className="mb-4 flex items-start justify-between">
+          <div>
+            <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Últimos pedidos</h2>
+            <p className="mt-0.5 text-[12.5px] text-ink/52">Atividade recente</p>
+          </div>
+          <Link href="/admin/pedidos" className="text-[13.5px] font-semibold text-wine hover:underline">
+            Ver todos →
+          </Link>
+        </div>
+        <RecentOrdersTable orders={metrics.recentOrders} />
       </div>
     </div>
   );

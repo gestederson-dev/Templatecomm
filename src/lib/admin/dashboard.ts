@@ -10,8 +10,9 @@ export type DashboardMetrics = {
   newCustomers: number;
   revenueByDay: { date: string; revenue: number }[];
   ordersByStatus: { status: string; count: number }[];
-  topProducts: { name: string; revenue: number }[];
+  topProducts: { name: string; quantity: number }[];
   funnel: { stage: string; count: number }[];
+  recentOrders: { id: string; orderNumber: string; customerName: string; origin: string; total: number; status: string; createdAt: string }[];
 };
 
 function toISODate(date: Date): string {
@@ -28,19 +29,25 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
   const fromISO = fromDate.toISOString();
   const toISO = toDate.toISOString();
 
-  const [{ data: orders }, { data: previousOrders }, { count: pendingQuotes }, { data: allQuotes }, { count: newCustomersCount }, { data: orderItems }] = await Promise.all([
-    supabase.from("orders").select("id, total, status, created_at").eq("status", "paid").gte("created_at", fromISO).lt("created_at", toISO),
-    supabase.from("orders").select("total").eq("status", "paid").gte("created_at", previousFrom.toISOString()).lt("created_at", previousTo.toISOString()),
-    supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "requested"),
-    supabase.from("quotes").select("status, created_at").gte("created_at", fromISO).lt("created_at", toISO),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer").gte("created_at", fromISO).lt("created_at", toISO),
-    supabase
-      .from("order_items")
-      .select("product_name, total, orders!inner(status, created_at)")
-      .eq("orders.status", "paid")
-      .gte("orders.created_at", fromISO)
-      .lt("orders.created_at", toISO),
-  ]);
+  const [{ data: orders }, { data: previousOrders }, { count: pendingQuotes }, { data: allQuotes }, { count: newCustomersCount }, { data: orderItems }, { data: recentOrdersRaw }] =
+    await Promise.all([
+      supabase.from("orders").select("id, total, status, created_at").eq("status", "paid").gte("created_at", fromISO).lt("created_at", toISO),
+      supabase.from("orders").select("total").eq("status", "paid").gte("created_at", previousFrom.toISOString()).lt("created_at", previousTo.toISOString()),
+      supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "requested"),
+      supabase.from("quotes").select("status, created_at").gte("created_at", fromISO).lt("created_at", toISO),
+      supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer").gte("created_at", fromISO).lt("created_at", toISO),
+      supabase
+        .from("order_items")
+        .select("product_name, quantity, orders!inner(status, created_at)")
+        .eq("orders.status", "paid")
+        .gte("orders.created_at", fromISO)
+        .lt("orders.created_at", toISO),
+      supabase
+        .from("orders")
+        .select("id, order_number, total, status, origin, created_at, profile:profiles(full_name, company_name)")
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ]);
 
   const revenue = (orders ?? []).reduce((sum, o) => sum + o.total, 0);
   const previousRevenue = (previousOrders ?? []).reduce((sum, o) => sum + o.total, 0);
@@ -67,15 +74,34 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
   }
   const ordersByStatus = Array.from(statusCounts.entries()).map(([status, count]) => ({ status, count }));
 
-  type OrderItemRow = { product_name: string; total: number };
-  const productRevenue = new Map<string, number>();
+  type OrderItemRow = { product_name: string; quantity: number };
+  const productQuantity = new Map<string, number>();
   for (const item of (orderItems ?? []) as unknown as OrderItemRow[]) {
-    productRevenue.set(item.product_name, (productRevenue.get(item.product_name) ?? 0) + item.total);
+    productQuantity.set(item.product_name, (productQuantity.get(item.product_name) ?? 0) + item.quantity);
   }
-  const topProducts = Array.from(productRevenue.entries())
-    .map(([name, revenue]) => ({ name, revenue }))
-    .sort((a, b) => b.revenue - a.revenue)
+  const topProducts = Array.from(productQuantity.entries())
+    .map(([name, quantity]) => ({ name, quantity }))
+    .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 10);
+
+  type RecentOrderRow = {
+    id: string;
+    order_number: string | null;
+    total: number;
+    status: string;
+    origin: string;
+    created_at: string;
+    profile: { full_name: string | null; company_name: string | null } | null;
+  };
+  const recentOrders = ((recentOrdersRaw ?? []) as unknown as RecentOrderRow[]).map((o) => ({
+    id: o.id,
+    orderNumber: o.order_number ?? "—",
+    customerName: o.profile?.company_name || o.profile?.full_name || "—",
+    origin: o.origin,
+    total: o.total,
+    status: o.status,
+    createdAt: o.created_at,
+  }));
 
   const reachedQuoted = quotesInPeriod.filter((q) => q.status !== "requested").length;
   const reachedApproved = quotesInPeriod.filter((q) => q.status === "approved" || q.status === "converted").length;
@@ -98,6 +124,7 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
     ordersByStatus,
     topProducts,
     funnel,
+    recentOrders,
   };
 }
 

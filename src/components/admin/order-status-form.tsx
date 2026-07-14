@@ -23,7 +23,7 @@ export function OrderStatusForm({ order }: { order: Order }) {
       <input type="hidden" name="id" value={order.id} />
       <div style={{ width: 220 }}>
         <label className={adminLabel}>Status</label>
-        <Select name="status" defaultValue={order.status}>
+        <Select name="status" defaultValue={order.status} items={STATUSES}>
           <SelectTrigger className="w-full rounded-[9px] border-line focus-visible:border-wine focus-visible:ring-wine-tint">
             <SelectValue />
           </SelectTrigger>

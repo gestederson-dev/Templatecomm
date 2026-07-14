@@ -23,7 +23,11 @@ function CategoryForm({ category, categories, onDone }: { category?: Category; c
       </div>
       <div style={{ width: 180 }}>
         <label className={adminLabel}>Categoria pai</label>
-        <Select name="parentId" defaultValue={category?.parent_id ?? undefined}>
+        <Select
+          name="parentId"
+          defaultValue={category?.parent_id ?? undefined}
+          items={categories.filter((c) => c.id !== category?.id).map((c) => ({ value: c.id, label: c.name }))}
+        >
           <SelectTrigger className="w-full rounded-[9px] border-line focus-visible:border-wine focus-visible:ring-wine-tint">
             <SelectValue placeholder="Nenhuma" />
           </SelectTrigger>

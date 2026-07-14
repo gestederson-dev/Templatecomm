@@ -37,7 +37,14 @@ export function CouponManager({ coupons }: { coupons: Coupon[] }) {
         </div>
         <div style={{ width: 140 }}>
           <label className={adminLabel}>Tipo</label>
-          <Select name="type" defaultValue="percent">
+          <Select
+            name="type"
+            defaultValue="percent"
+            items={[
+              { value: "percent", label: "% percentual" },
+              { value: "fixed", label: "R$ fixo" },
+            ]}
+          >
             <SelectTrigger className="w-full rounded-[9px] border-line focus-visible:border-wine focus-visible:ring-wine-tint">
               <SelectValue />
             </SelectTrigger>

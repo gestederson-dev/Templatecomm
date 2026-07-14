@@ -43,7 +43,11 @@ export function ProductFilters({ categories }: { categories?: Category[] }) {
       {categories && categories.length > 0 ? (
         <div className="flex flex-col gap-1.5">
           <span className={filterLabel}>Categoria</span>
-          <Select value={searchParams.get("categoria") ?? "todas"} onValueChange={(value) => updateParam("categoria", value === "todas" ? null : value)}>
+          <Select
+            value={searchParams.get("categoria") ?? "todas"}
+            onValueChange={(value) => updateParam("categoria", value === "todas" ? null : value)}
+            items={[{ value: "todas", label: "Todas" }, ...categories.map((category) => ({ value: category.slug, label: category.name }))]}
+          >
             <SelectTrigger className="w-40 rounded-xl border-ink/12 focus-visible:border-wine focus-visible:ring-wine/40">
               <SelectValue />
             </SelectTrigger>
@@ -97,7 +101,15 @@ export function ProductFilters({ categories }: { categories?: Category[] }) {
 
       <div className="ml-auto flex flex-col gap-1.5">
         <span className={filterLabel}>Ordenar por</span>
-        <Select value={searchParams.get("sort") ?? "relevance"} onValueChange={(value) => updateParam("sort", value === "relevance" ? null : value)}>
+        <Select
+          value={searchParams.get("sort") ?? "relevance"}
+          onValueChange={(value) => updateParam("sort", value === "relevance" ? null : value)}
+          items={[
+            { value: "relevance", label: "Mais recentes" },
+            { value: "price_asc", label: "Menor preço" },
+            { value: "price_desc", label: "Maior preço" },
+          ]}
+        >
           <SelectTrigger className="w-40 rounded-xl border-ink/12 focus-visible:border-wine focus-visible:ring-wine/40">
             <SelectValue />
           </SelectTrigger>

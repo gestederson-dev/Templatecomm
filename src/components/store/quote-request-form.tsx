@@ -92,7 +92,11 @@ export function QuoteRequestForm({
           </label>
 
           {(option.type === "select" || option.type === "color") && option.options ? (
-            <Select value={values[option.name] ?? ""} onValueChange={(value) => setValues((prev) => ({ ...prev, [option.name]: value ?? "" }))}>
+            <Select
+              value={values[option.name] ?? ""}
+              onValueChange={(value) => setValues((prev) => ({ ...prev, [option.name]: value ?? "" }))}
+              items={option.options.map((value) => ({ value, label: value }))}
+            >
               <SelectTrigger className="w-full rounded-xl border-ink/12 focus-visible:border-wine focus-visible:ring-wine/40">
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>

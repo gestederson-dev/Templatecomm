@@ -321,13 +321,45 @@
   transition-delay: 0.32s;
 }
 
+/* transição entre páginas */
+.salmar-page-enter {
+  animation: salmar-page-enter 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes salmar-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* loader de carregamento (coração pulsante) */
+.salmar-pulse {
+  animation: salmar-pulse 1.3s ease-in-out infinite;
+}
+@keyframes salmar-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .salmar-rise,
   .salmar-halo,
   .salmar-gem,
   .salmar-chip,
   .salmar-glint,
-  .salmar-underline::after {
+  .salmar-underline::after,
+  .salmar-pulse {
     animation: none !important;
   }
   .salmar-rise {
@@ -340,6 +372,11 @@
   .salmar-reveal,
   .salmar-stagger > * {
     transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .salmar-page-enter {
+    animation: none !important;
     opacity: 1 !important;
     transform: none !important;
   }

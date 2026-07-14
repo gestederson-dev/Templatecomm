@@ -21,6 +21,13 @@
   --color-paper: var(--paper);
   --color-wine-tint: var(--wine-tint);
   --color-amber-tint: var(--amber-tint);
+  --color-line: var(--line);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -105,6 +112,15 @@
   --line: rgba(10, 10, 10, 0.1);
   --shadow-brand: 0 1px 2px rgba(10, 10, 10, 0.04), 0 12px 30px -12px rgba(92, 3, 35, 0.18);
   --shadow-brand-lift: 0 2px 4px rgba(10, 10, 10, 0.05), 0 24px 48px -16px rgba(92, 3, 35, 0.3);
+
+  /* Painel admin — cores de status (design-system dos protótipos salmar-admin-*.html) */
+  --ok: #1a7a4f;
+  --ok-bg: rgba(26, 122, 79, 0.12);
+  --warn: #b8720a;
+  --warn-bg: rgba(243, 154, 0, 0.16);
+  --info: #2563a8;
+  --info-bg: rgba(37, 99, 168, 0.12);
+  --shadow-panel: 0 1px 2px rgba(10, 10, 10, 0.04), 0 8px 22px -12px rgba(92, 3, 35, 0.16);
 }
 
 .dark {

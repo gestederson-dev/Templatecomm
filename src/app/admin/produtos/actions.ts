@@ -25,6 +25,16 @@ export async function saveProductAction(_prevState: ActionState, formData: FormD
   const basePriceRaw = String(formData.get("basePrice") ?? "").trim();
   const categoryId = String(formData.get("categoryId") ?? "") || null;
 
+  const dimensionsRaw = String(formData.get("dimensions") ?? "").trim();
+  const dimensionsMatch = dimensionsRaw.match(/^(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)$/i);
+  const dimensions = dimensionsMatch
+    ? {
+        altura: Number(dimensionsMatch[1].replace(",", ".")),
+        largura: Number(dimensionsMatch[2].replace(",", ".")),
+        comprimento: Number(dimensionsMatch[3].replace(",", ".")),
+      }
+    : null;
+
   const payload = {
     name,
     slug,
@@ -34,10 +44,12 @@ export async function saveProductAction(_prevState: ActionState, formData: FormD
     sku: String(formData.get("sku") ?? "").trim() || null,
     stock_quantity: Number(formData.get("stockQuantity") ?? 0) || 0,
     weight_grams: Number(formData.get("weightGrams") ?? 0) || 0,
+    dimensions,
     allow_direct_sale: formData.get("allowDirectSale") === "on",
     allow_quote: formData.get("allowQuote") === "on",
     min_quote_quantity: Number(formData.get("minQuoteQuantity") ?? 1) || 1,
     is_featured: formData.get("isFeatured") === "on",
+    is_active: formData.get("isActive") === "on",
   };
 
   const supabase = await createClient();
@@ -50,7 +62,7 @@ export async function saveProductAction(_prevState: ActionState, formData: FormD
     return undefined;
   }
 
-  const { data, error } = await supabase.from("products").insert({ ...payload, is_active: true }).select("id").single();
+  const { data, error } = await supabase.from("products").insert(payload).select("id").single();
   if (error) return { error: error.message };
 
   revalidatePath("/admin/produtos");
@@ -124,6 +136,12 @@ export async function addCustomizationOptionAction(_prevState: ActionState, form
 
   revalidatePath(`/admin/produtos/${productId}`);
   return undefined;
+}
+
+export async function toggleCustomizationRequiredAction(optionId: string, productId: string, required: boolean): Promise<void> {
+  const supabase = await createClient();
+  await supabase.from("product_customization_options").update({ required }).eq("id", optionId);
+  revalidatePath(`/admin/produtos/${productId}`);
 }
 
 export async function deleteCustomizationOptionAction(optionId: string, productId: string): Promise<void> {

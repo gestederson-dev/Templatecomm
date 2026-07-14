@@ -56,6 +56,16 @@ export async function sendQuoteAction(_prevState: ActionState, formData: FormDat
   return undefined;
 }
 
+export async function adminRejectQuoteAction(quoteId: string): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("quotes").update({ status: "rejected" }).eq("id", quoteId);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/orcamentos/${quoteId}`);
+  revalidatePath("/admin/orcamentos");
+  return { success: true };
+}
+
 export async function adminConvertToOrderAction(quoteId: string): Promise<{ error: string } | { success: true; orderNumber: string }> {
   const supabase = await createClient();
 

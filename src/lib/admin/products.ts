@@ -1,13 +1,38 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ProductWithRelations, Category, Product } from "@/lib/types";
+import type { ProductWithRelations, Category, Product, ProductImage } from "@/lib/types";
 
-export type AdminProductListItem = Product & { category: Pick<Category, "name"> | null };
+export type AdminProductListItem = Product & { category: Pick<Category, "name" | "slug"> | null; primary_image: ProductImage | null };
 
-export async function getAdminProducts(): Promise<AdminProductListItem[]> {
+export type AdminProductFilters = {
+  search?: string;
+  categoryId?: string;
+  status?: "active" | "inactive";
+  type?: "direct" | "quote";
+};
+
+export async function getAdminProducts(filters: AdminProductFilters = {}): Promise<AdminProductListItem[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("products").select("*, category:categories(name)").order("created_at", { ascending: false });
+  let query = supabase
+    .from("products")
+    .select("*, category:categories(name, slug), product_images(id, product_id, url, alt, sort_order, is_primary)")
+    .order("created_at", { ascending: false });
+
+  if (filters.search) query = query.ilike("name", `%${filters.search}%`);
+  if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
+  if (filters.status) query = query.eq("is_active", filters.status === "active");
+  if (filters.type === "direct") query = query.eq("allow_direct_sale", true);
+  if (filters.type === "quote") query = query.eq("allow_quote", true);
+
+  const { data, error } = await query;
   if (error) throw error;
-  return data ?? [];
+
+  type RawRow = Product & { category: { name: string; slug: string } | null; product_images: ProductImage[] };
+
+  return (data as unknown as RawRow[]).map((row) => {
+    const { product_images, ...product } = row;
+    const primary = (product_images ?? []).find((img) => img.is_primary) ?? product_images?.[0] ?? null;
+    return { ...product, primary_image: primary };
+  });
 }
 
 export async function getAdminProductById(id: string): Promise<ProductWithRelations | null> {

@@ -24,7 +24,7 @@ function RequiredToggle({ option, productId }: { option: ProductCustomizationOpt
       onClick={() => startTransition(() => toggleCustomizationRequiredAction(option.id, productId, !option.required))}
       className={`relative h-[22px] w-[38px] shrink-0 rounded-full transition-colors ${option.required ? "bg-ok" : "bg-ink/18"}`}
     >
-      <span className={`absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white transition-transform ${option.required ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+      <span className={`absolute left-0.5 top-0.5 h-[18px] w-[18px] rounded-full bg-white transition-transform ${option.required ? "translate-x-4" : "translate-x-0"}`} />
     </button>
   );
 }

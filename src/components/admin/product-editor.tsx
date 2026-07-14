@@ -26,7 +26,7 @@ function ToggleField({ name, defaultChecked, label, hint }: { name: string; defa
       <span className="relative inline-flex h-[22px] w-[38px] shrink-0 items-center">
         <input type="checkbox" name={name} form={FORM_ID} defaultChecked={defaultChecked} className="peer sr-only" />
         <span className="absolute inset-0 rounded-full bg-ink/18 transition-colors peer-checked:bg-ok" aria-hidden="true" />
-        <span className="absolute left-0.5 h-[18px] w-[18px] translate-x-0 rounded-full bg-white transition-transform peer-checked:translate-x-[18px]" aria-hidden="true" />
+        <span className="absolute left-0.5 top-0.5 h-[18px] w-[18px] translate-x-0 rounded-full bg-white transition-transform peer-checked:translate-x-4" aria-hidden="true" />
       </span>
     </label>
   );

@@ -28,7 +28,7 @@ export function ToggleActiveButton({
       }`}
     >
       <span
-        className={`absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white transition-transform ${isActive ? "translate-x-[18px]" : "translate-x-0.5"}`}
+        className={`absolute left-0.5 top-0.5 h-[18px] w-[18px] rounded-full bg-white transition-transform ${isActive ? "translate-x-4" : "translate-x-0"}`}
       />
     </button>
   );

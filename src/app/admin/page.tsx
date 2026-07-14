@@ -1,9 +1,9 @@
 import { StatCard } from "@/components/admin/dashboard/stat-card";
 import { PeriodFilter } from "@/components/admin/dashboard/period-filter";
-import { RevenueChart } from "@/components/admin/dashboard/revenue-chart";
-import { StatusChart } from "@/components/admin/dashboard/status-chart";
+import { RevenueAreaChart } from "@/components/admin/dashboard/revenue-area-chart";
+import { StatusDonut } from "@/components/admin/dashboard/status-donut";
 import { TopProductsChart } from "@/components/admin/dashboard/top-products-chart";
-import { QuoteFunnelChart } from "@/components/admin/dashboard/quote-funnel-chart";
+import { QuoteFunnel } from "@/components/admin/dashboard/quote-funnel";
 import { adminCard } from "@/components/admin/ui-styles";
 import { getDashboardMetrics, periodFromDays, toISODate } from "@/lib/admin/dashboard";
 import { formatBRL } from "@/lib/format";
@@ -43,22 +43,33 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <StatCard label="Novos clientes" value={String(metrics.newCustomers)} />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
         <div className={adminCard}>
-          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Faturamento no período</h2>
-          <RevenueChart data={metrics.revenueByDay} />
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Faturamento no período</h2>
+              <p className="mt-0.5 text-[12.5px] text-ink/52">Receita diária</p>
+            </div>
+            <div className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-[-0.02em] text-wine">{formatBRL(metrics.revenue)}</div>
+          </div>
+          <RevenueAreaChart data={metrics.revenueByDay} />
         </div>
         <div className={adminCard}>
-          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Pedidos por status</h2>
-          <StatusChart data={metrics.ordersByStatus} />
+          <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Pedidos por status</h2>
+          <p className="mb-4 mt-0.5 text-[12.5px] text-ink/52">Distribuição atual</p>
+          <StatusDonut data={metrics.ordersByStatus} />
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[1fr_1.3fr]">
+        <div className={adminCard}>
+          <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Funil de orçamentos</h2>
+          <p className="mb-4 mt-0.5 text-[12.5px] text-ink/52">Do pedido de cotação à venda</p>
+          <QuoteFunnel data={metrics.funnel} />
         </div>
         <div className={adminCard}>
           <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Top 10 produtos</h2>
           <TopProductsChart data={metrics.topProducts} />
-        </div>
-        <div className={adminCard}>
-          <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold">Funil de orçamentos</h2>
-          <QuoteFunnelChart data={metrics.funnel} />
         </div>
       </div>
     </div>

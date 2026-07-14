@@ -1,12 +1,13 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartEmptyState } from "@/components/admin/dashboard/chart-empty-state";
 import { CHART_AXIS, CHART_GRID, SEQUENTIAL_WINE } from "@/lib/admin/chart-colors";
 import { formatBRL } from "@/lib/format";
 
 export function TopProductsChart({ data }: { data: { name: string; revenue: number }[] }) {
   if (data.length === 0) {
-    return <div className="flex h-64 items-center justify-center text-sm text-ink/52">Sem vendas no período.</div>;
+    return <ChartEmptyState message="Sem vendas no período." />;
   }
 
   const chartData = [...data].sort((a, b) => a.revenue - b.revenue);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { ChartEmptyState } from "@/components/admin/dashboard/chart-empty-state";
 
 const VIEW_W = 640;
 const VIEW_H = 190;
@@ -9,7 +10,7 @@ const BOTTOM = 160;
 
 export function RevenueAreaChart({ data }: { data: { date: string; revenue: number }[] }) {
   if (data.length === 0) {
-    return <div className="flex h-[190px] items-center justify-center text-sm text-ink/52">Sem faturamento no período.</div>;
+    return <ChartEmptyState message="Sem faturamento no período." />;
   }
 
   const gradientId = useId();

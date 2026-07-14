@@ -1,3 +1,5 @@
+import { ChartEmptyState } from "@/components/admin/dashboard/chart-empty-state";
+
 const R = 46;
 const CIRCUMFERENCE = 2 * Math.PI * R;
 
@@ -15,7 +17,7 @@ export function StatusDonut({ data }: { data: { status: string; count: number }[
   const total = segments.reduce((sum, s) => sum + s.count, 0);
 
   if (total === 0) {
-    return <div className="flex h-[190px] items-center justify-center text-sm text-ink/52">Sem pedidos no período.</div>;
+    return <ChartEmptyState message="Sem pedidos no período." />;
   }
 
   let cumulative = 0;

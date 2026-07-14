@@ -54,7 +54,7 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone?: (
         <label htmlFor="label" className={storeLabel}>
           Identificação (opcional)
         </label>
-        <input id="label" name="label" placeholder="Casa, Trabalho..." defaultValue={address?.label ?? ""} className={storeInput} />
+        <input id="label" name="label" placeholder="Casa, Trabalho..." defaultValue={address?.label ?? ""} className={`${storeInput} w-full`} />
       </div>
 
       <div>
@@ -79,13 +79,13 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone?: (
           <label htmlFor="street" className={storeLabel}>
             Endereço
           </label>
-          <input id="street" name="street" required value={street} onChange={(event) => setStreet(event.target.value)} className={storeInput} />
+          <input id="street" name="street" required value={street} onChange={(event) => setStreet(event.target.value)} className={`${storeInput} w-full`} />
         </div>
         <div>
           <label htmlFor="number" className={storeLabel}>
             Número
           </label>
-          <input id="number" name="number" defaultValue={address?.number ?? ""} className={storeInput} />
+          <input id="number" name="number" defaultValue={address?.number ?? ""} className={`${storeInput} w-full`} />
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone?: (
         <label htmlFor="complement" className={storeLabel}>
           Complemento
         </label>
-        <input id="complement" name="complement" defaultValue={address?.complement ?? ""} className={storeInput} />
+        <input id="complement" name="complement" defaultValue={address?.complement ?? ""} className={`${storeInput} w-full`} />
       </div>
 
       <div className="grid grid-cols-4 gap-3">
@@ -101,19 +101,19 @@ export function AddressForm({ address, onDone }: { address?: Address; onDone?: (
           <label htmlFor="district" className={storeLabel}>
             Bairro
           </label>
-          <input id="district" name="district" value={district} onChange={(event) => setDistrict(event.target.value)} className={storeInput} />
+          <input id="district" name="district" value={district} onChange={(event) => setDistrict(event.target.value)} className={`${storeInput} w-full`} />
         </div>
         <div>
           <label htmlFor="city" className={storeLabel}>
             Cidade
           </label>
-          <input id="city" name="city" required value={city} onChange={(event) => setCity(event.target.value)} className={storeInput} />
+          <input id="city" name="city" required value={city} onChange={(event) => setCity(event.target.value)} className={`${storeInput} w-full`} />
         </div>
         <div>
           <label htmlFor="state" className={storeLabel}>
             UF
           </label>
-          <input id="state" name="state" required maxLength={2} value={uf} onChange={(event) => setUf(event.target.value.toUpperCase())} className={storeInput} />
+          <input id="state" name="state" required maxLength={2} value={uf} onChange={(event) => setUf(event.target.value.toUpperCase())} className={`${storeInput} w-full`} />
         </div>
       </div>
 

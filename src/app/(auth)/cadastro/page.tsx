@@ -44,7 +44,7 @@ export default function CadastroPage() {
           <label htmlFor="fullName" className={storeLabel}>
             {personType === "pf" ? "Nome completo" : "Nome do responsável"}
           </label>
-          <input id="fullName" name="fullName" required autoFocus className={storeInput} />
+          <input id="fullName" name="fullName" required autoFocus className={`${storeInput} w-full`} />
         </div>
 
         {personType === "pj" ? (
@@ -52,7 +52,7 @@ export default function CadastroPage() {
             <label htmlFor="companyName" className={storeLabel}>
               Razão social
             </label>
-            <input id="companyName" name="companyName" required className={storeInput} />
+            <input id="companyName" name="companyName" required className={`${storeInput} w-full`} />
           </div>
         ) : null}
 
@@ -67,7 +67,7 @@ export default function CadastroPage() {
             value={document}
             onChange={(event) => setDocument(personType === "pf" ? formatarCPF(event.target.value) : formatarCNPJ(event.target.value))}
             placeholder={personType === "pf" ? "000.000.000-00" : "00.000.000/0000-00"}
-            className={storeInput}
+            className={`${storeInput} w-full`}
           />
         </div>
 
@@ -75,21 +75,21 @@ export default function CadastroPage() {
           <label htmlFor="phone" className={storeLabel}>
             Telefone / WhatsApp
           </label>
-          <input id="phone" name="phone" placeholder="(00) 00000-0000" className={storeInput} />
+          <input id="phone" name="phone" placeholder="(00) 00000-0000" className={`${storeInput} w-full`} />
         </div>
 
         <div>
           <label htmlFor="email" className={storeLabel}>
             E-mail
           </label>
-          <input id="email" name="email" type="email" required className={storeInput} />
+          <input id="email" name="email" type="email" required className={`${storeInput} w-full`} />
         </div>
 
         <div>
           <label htmlFor="password" className={storeLabel}>
             Senha
           </label>
-          <input id="password" name="password" type="password" required minLength={8} className={storeInput} />
+          <input id="password" name="password" type="password" required minLength={8} className={`${storeInput} w-full`} />
         </div>
 
         {state?.error ? <p className="text-sm text-destructive">{state.error}</p> : null}

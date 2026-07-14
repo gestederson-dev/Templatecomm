@@ -21,11 +21,11 @@ export async function ProductListing({
 
   return (
     <div className="flex flex-col gap-6">
-      {title ? <h1 className="text-2xl font-semibold tracking-tight">{title}</h1> : null}
+      {title ? <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">{title}</h1> : null}
 
       <ProductFilters categories={categories} />
 
-      <p className="text-sm text-muted-foreground">{total === 0 ? "Nenhum produto encontrado." : `${total} produto${total === 1 ? "" : "s"} encontrado${total === 1 ? "" : "s"}.`}</p>
+      <p className="text-sm text-ink/52">{total === 0 ? "Nenhum produto encontrado." : `${total} produto${total === 1 ? "" : "s"} encontrado${total === 1 ? "" : "s"}.`}</p>
 
       {items.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

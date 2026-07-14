@@ -14,14 +14,14 @@ export function ProfileForm({ fullName, phone }: { fullName: string; phone: stri
         <label htmlFor="fullName" className={storeLabel}>
           Nome
         </label>
-        <input id="fullName" name="fullName" defaultValue={fullName} required className={storeInput} />
+        <input id="fullName" name="fullName" defaultValue={fullName} required className={`${storeInput} w-full`} />
       </div>
 
       <div>
         <label htmlFor="phone" className={storeLabel}>
           Telefone / WhatsApp
         </label>
-        <input id="phone" name="phone" defaultValue={phone} placeholder="(00) 00000-0000" className={storeInput} />
+        <input id="phone" name="phone" defaultValue={phone} placeholder="(00) 00000-0000" className={`${storeInput} w-full`} />
       </div>
 
       {state && "error" in state ? <p className="text-sm text-destructive">{state.error}</p> : null}

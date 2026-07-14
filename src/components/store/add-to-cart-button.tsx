@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useCartStore } from "@/stores/cart";
+import { btnWine } from "@/components/store/button-styles";
+import { storeInput } from "@/components/store/ui-styles";
 
 export function AddToCartButton({
   productId,
@@ -29,18 +29,18 @@ export function AddToCartButton({
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <Input
+    <div className="flex items-center gap-2.5">
+      <input
         type="number"
         min={1}
         value={quantity}
         onChange={(event) => setQuantity(Math.max(1, Number(event.target.value) || 1))}
-        className="w-16"
+        className={`${storeInput} w-16 px-2 py-2.5 text-center`}
         aria-label="Quantidade"
       />
-      <Button onClick={handleAdd} className="flex-1">
+      <button type="button" onClick={handleAdd} className={`${btnWine} flex-1 whitespace-nowrap`}>
         {added ? "Adicionado ✓" : "Adicionar ao carrinho"}
-      </Button>
+      </button>
     </div>
   );
 }

@@ -2,7 +2,7 @@ const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible
 
 export const storeCard = "rounded-2xl border border-ink/8 bg-white p-6 shadow-[var(--shadow-brand)]";
 
-export const storeInput = `w-full rounded-xl border border-ink/12 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-shadow placeholder:text-ink/35 focus:border-wine focus:ring-[3px] focus:ring-wine-tint ${focusRing}`;
+export const storeInput = `rounded-xl border border-ink/12 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition-shadow placeholder:text-ink/35 focus:border-wine focus:ring-[3px] focus:ring-wine-tint ${focusRing}`;
 
 export const storeLabel = "mb-1.5 block text-[13px] font-semibold text-ink/80";
 

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function CarrinhoPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight">Carrinho</h1>
+      <h1 className="mb-6 font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Carrinho</h1>
       <CartView />
     </div>
   );

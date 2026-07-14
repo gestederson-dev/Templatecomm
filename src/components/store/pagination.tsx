@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { btnOutline } from "@/components/store/button-styles";
 
 function buildHref(basePath: string, params: URLSearchParams, page: number): string {
   const next = new URLSearchParams(params);
   next.set("page", String(page));
   return `${basePath}?${next.toString()}`;
 }
+
+const disabledStyle = "pointer-events-none opacity-40";
 
 export function CatalogPagination({
   basePath,
@@ -27,25 +29,25 @@ export function CatalogPagination({
   const isLastPage = page >= totalPages;
 
   return (
-    <nav aria-label="Paginação" className="flex items-center justify-center gap-2 pt-8">
+    <nav aria-label="Paginação" className="flex items-center justify-center gap-3 pt-8">
       {isFirstPage ? (
-        <Button variant="outline" size="sm" disabled>
-          Anterior
-        </Button>
+        <span className={`${btnOutline} ${disabledStyle} px-4 py-2 text-[13px]`}>Anterior</span>
       ) : (
-        <Button render={<Link href={buildHref(basePath, currentParams, page - 1)}>Anterior</Link>} variant="outline" size="sm" />
+        <Link href={buildHref(basePath, currentParams, page - 1)} className={`${btnOutline} px-4 py-2 text-[13px]`}>
+          Anterior
+        </Link>
       )}
 
-      <span className="text-sm text-muted-foreground">
+      <span className="text-sm text-ink/52">
         Página {page} de {totalPages}
       </span>
 
       {isLastPage ? (
-        <Button variant="outline" size="sm" disabled>
-          Próxima
-        </Button>
+        <span className={`${btnOutline} ${disabledStyle} px-4 py-2 text-[13px]`}>Próxima</span>
       ) : (
-        <Button render={<Link href={buildHref(basePath, currentParams, page + 1)}>Próxima</Link>} variant="outline" size="sm" />
+        <Link href={buildHref(basePath, currentParams, page + 1)} className={`${btnOutline} px-4 py-2 text-[13px]`}>
+          Próxima
+        </Link>
       )}
     </nav>
   );

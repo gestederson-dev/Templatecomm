@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { createQuoteAction } from "@/lib/quote-actions";
+import { btnAmber } from "@/components/store/button-styles";
+import { storeInput, storeLabel } from "@/components/store/ui-styles";
 import type { ProductCustomizationOption } from "@/lib/types";
 
 export function QuoteRequestForm({
@@ -48,14 +48,19 @@ export function QuoteRequestForm({
   async function handleSubmit() {
     const missing = options.find((option) => option.required && !values[option.name]);
     if (missing) {
-      setError(`Preencha o campo obrigatório: ${missing.name}`);
+      setError(`Preencha o campo "${missing.name}".`);
       return;
     }
 
     setSubmitting(true);
     setError(null);
 
-    const result = await createQuoteAction({ productId, quantity, customization: values, message });
+    const result = await createQuoteAction({
+      productId,
+      quantity,
+      customization: values,
+      message,
+    });
 
     setSubmitting(false);
     if ("error" in result) {
@@ -67,22 +72,28 @@ export function QuoteRequestForm({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Quantidade (mín. {minQuantity})</label>
-        <Input type="number" min={minQuantity} value={quantity} onChange={(event) => setQuantity(Math.max(minQuantity, Number(event.target.value) || minQuantity))} className="w-24" />
+    <div className="flex flex-col gap-3.5">
+      <div>
+        <label className={storeLabel}>Quantidade (mín. {minQuantity})</label>
+        <input
+          type="number"
+          min={minQuantity}
+          value={quantity}
+          onChange={(event) => setQuantity(Math.max(minQuantity, Number(event.target.value) || minQuantity))}
+          className={`${storeInput} w-24`}
+        />
       </div>
 
       {options.map((option) => (
-        <div key={option.id} className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">
+        <div key={option.id}>
+          <label className={storeLabel}>
             {option.name}
             {option.required ? " *" : ""}
           </label>
 
           {(option.type === "select" || option.type === "color") && option.options ? (
             <Select value={values[option.name] ?? ""} onValueChange={(value) => setValues((prev) => ({ ...prev, [option.name]: value ?? "" }))}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full rounded-xl border-ink/12 focus-visible:border-wine focus-visible:ring-wine/40">
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
@@ -99,33 +110,33 @@ export function QuoteRequestForm({
                 type="file"
                 accept="image/*,.pdf,.ai,.eps"
                 onChange={(event) => handleFileChange(option.name, event.target.files?.[0] ?? null)}
-                className="text-sm"
+                className="text-sm text-ink/70 file:mr-3 file:rounded-full file:border-0 file:bg-wine-tint file:px-3.5 file:py-1.5 file:text-[13px] file:font-semibold file:text-wine"
               />
-              {uploading === option.name ? <span className="text-xs text-muted-foreground">Enviando...</span> : null}
-              {values[option.name] ? <span className="text-xs text-primary">Arquivo enviado ✓</span> : null}
+              {uploading === option.name ? <span className="mt-1 block text-xs text-ink/50">Enviando...</span> : null}
+              {values[option.name] ? <span className="mt-1 block text-xs font-semibold text-ok">Arquivo enviado ✓</span> : null}
             </>
           ) : (
-            <Input value={values[option.name] ?? ""} onChange={(event) => setValues((prev) => ({ ...prev, [option.name]: event.target.value }))} />
+            <input value={values[option.name] ?? ""} onChange={(event) => setValues((prev) => ({ ...prev, [option.name]: event.target.value }))} className={`${storeInput} w-full`} />
           )}
         </div>
       ))}
 
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-medium text-muted-foreground">Mensagem (opcional)</label>
+      <div>
+        <label className={storeLabel}>Mensagem (opcional)</label>
         <textarea
           value={message}
           onChange={(event) => setMessage(event.target.value)}
           rows={3}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          className={`${storeInput} w-full`}
           placeholder="Conte mais sobre o que você precisa..."
         />
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-      <Button type="button" variant="secondary" className="w-full" onClick={handleSubmit} disabled={submitting || uploading != null}>
+      <button type="button" className={`${btnAmber} w-full disabled:pointer-events-none disabled:opacity-50`} onClick={handleSubmit} disabled={submitting || uploading != null}>
         {submitting ? "Enviando..." : "Solicitar orçamento"}
-      </Button>
+      </button>
     </div>
   );
 }

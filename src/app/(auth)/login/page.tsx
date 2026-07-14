@@ -17,14 +17,14 @@ export default function LoginPage() {
           <label htmlFor="email" className={storeLabel}>
             E-mail
           </label>
-          <input id="email" name="email" type="email" required autoFocus className={storeInput} />
+          <input id="email" name="email" type="email" required autoFocus className={`${storeInput} w-full`} />
         </div>
 
         <div>
           <label htmlFor="password" className={storeLabel}>
             Senha
           </label>
-          <input id="password" name="password" type="password" required className={storeInput} />
+          <input id="password" name="password" type="password" required className={`${storeInput} w-full`} />
         </div>
 
         {state?.error ? <p className="text-sm text-destructive">{state.error}</p> : null}

@@ -32,13 +32,13 @@ export function QuoteFunnel({ data }: { data: { stage: string; count: number }[]
         return (
           <div key={stage.stage} className="flex items-center gap-3">
             <div
-              className="flex h-[38px] shrink-0 items-center rounded-lg px-3.5 text-[13.5px] font-semibold"
+              className="flex h-[38px] items-center rounded-lg px-3.5 text-[13.5px] font-semibold"
               style={{ width: `${pct}%`, minWidth: MIN_BAR_WIDTH_PX, background: style.bg, color: style.color }}
             >
               {fits ? stage.stage : ""}
             </div>
             {!fits ? <span className="shrink-0 whitespace-nowrap text-[13.5px] font-semibold text-ink">{stage.stage}</span> : null}
-            <div className="ml-auto shrink-0 whitespace-nowrap text-[12.5px] text-ink/52">
+            <div className="ml-auto shrink-0 whitespace-nowrap pr-0.5 text-[12.5px] text-ink/52">
               <b className="font-[family-name:var(--font-display)] text-[15px] text-ink">{stage.count}</b>
               {i > 0 ? ` · ${pct}%` : ""}
             </div>

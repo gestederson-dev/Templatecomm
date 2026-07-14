@@ -32,15 +32,21 @@ export function LogoUpload({ currentUrl }: { currentUrl: string | null }) {
   return (
     <div className="flex items-center gap-4">
       {url ? (
-        <div className="relative h-16 w-16 overflow-hidden rounded-md border bg-muted">
+        <div className="relative h-16 w-16 overflow-hidden rounded-xl border border-line bg-paper">
           <Image src={url} alt="Logo" fill sizes="64px" className="object-contain" />
         </div>
       ) : (
-        <div className="flex h-16 w-16 items-center justify-center rounded-md border text-xs text-muted-foreground">Sem logo</div>
+        <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-line text-xs text-ink/45">Sem logo</div>
       )}
       <div className="flex flex-col gap-1">
-        <input ref={inputRef} type="file" accept="image/*" onChange={(event) => handleChange(event.target.files?.[0] ?? null)} className="text-sm" />
-        {uploading ? <span className="text-xs text-muted-foreground">Enviando...</span> : null}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={(event) => handleChange(event.target.files?.[0] ?? null)}
+          className="text-sm text-ink/70 file:mr-3 file:rounded-full file:border-0 file:bg-wine-tint file:px-3.5 file:py-1.5 file:text-[13px] file:font-semibold file:text-wine"
+        />
+        {uploading ? <span className="text-xs text-ink/50">Enviando...</span> : null}
         {error ? <span className="text-xs text-destructive">{error}</span> : null}
       </div>
     </div>

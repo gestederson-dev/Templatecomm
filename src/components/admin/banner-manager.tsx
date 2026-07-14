@@ -1,15 +1,13 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ToggleActiveButton } from "@/components/admin/toggle-active-button";
+import { adminBtnWine, adminCard, adminInput, adminLabel, adminPanel } from "@/components/admin/ui-styles";
 import { createBannerAction, deleteBannerAction, toggleBannerActiveAction } from "@/app/admin/banners/actions";
 import type { Banner } from "@/lib/types";
 
 export function BannerManager({ banners }: { banners: Banner[] }) {
-  const [toggling, startToggle] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -30,47 +28,44 @@ export function BannerManager({ banners }: { banners: Banner[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        {banners.length === 0 ? <p className="text-sm text-muted-foreground">Nenhum banner cadastrado.</p> : null}
-        {banners.map((banner) => (
-          <div key={banner.id} className="flex items-center gap-4 rounded-lg border p-3">
-            <div className="relative h-16 w-28 overflow-hidden rounded-md bg-muted">
+      <div className={adminPanel}>
+        {banners.length === 0 ? <p className="p-4 text-sm text-ink/52">Nenhum banner cadastrado.</p> : null}
+        {banners.map((banner, index) => (
+          <div key={banner.id} className={`flex items-center gap-4 px-4 py-3.5 ${index > 0 ? "border-t border-line" : ""}`}>
+            <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-xl bg-paper">
               <Image src={banner.image_url} alt={banner.title ?? ""} fill sizes="112px" className="object-cover" />
             </div>
             <div className="flex-1 text-sm">
-              <p className="font-medium">{banner.title || "(sem título)"}</p>
-              {banner.link ? <p className="text-muted-foreground">{banner.link}</p> : null}
+              <p className="font-semibold text-ink">{banner.title || "(sem título)"}</p>
+              {banner.link ? <p className="text-ink/52">{banner.link}</p> : null}
             </div>
-            <Badge variant={banner.is_active ? "default" : "secondary"}>{banner.is_active ? "Ativo" : "Inativo"}</Badge>
-            <Button type="button" size="sm" variant="ghost" disabled={toggling} onClick={() => startToggle(() => toggleBannerActiveAction(banner.id, !banner.is_active))}>
-              {banner.is_active ? "Desativar" : "Ativar"}
-            </Button>
+            <ToggleActiveButton id={banner.id} isActive={banner.is_active} action={toggleBannerActiveAction} label={banner.is_active ? "Desativar" : "Ativar"} />
             <form action={deleteBannerAction}>
               <input type="hidden" name="id" value={banner.id} />
-              <Button type="submit" size="sm" variant="ghost" className="text-destructive">
+              <button type="submit" className="text-sm font-semibold text-destructive hover:underline">
                 Excluir
-              </Button>
+              </button>
             </form>
           </div>
         ))}
       </div>
 
-      <form ref={formRef} action={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-lg border p-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Imagem</label>
-          <input type="file" name="file" accept="image/*" required className="text-sm" />
+      <form ref={formRef} action={handleSubmit} className={`${adminCard} flex flex-wrap items-end gap-3`}>
+        <div style={{ width: 200 }}>
+          <label className={adminLabel}>Imagem</label>
+          <input type="file" name="file" accept="image/*" required className="text-sm text-ink/70 file:mr-3 file:rounded-full file:border-0 file:bg-wine-tint file:px-3.5 file:py-1.5 file:text-[13px] file:font-semibold file:text-wine" />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Título (opcional)</label>
-          <Input name="title" className="w-48" />
+        <div style={{ width: 200 }}>
+          <label className={adminLabel}>Título (opcional)</label>
+          <input name="title" className={adminInput} />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground">Link (opcional)</label>
-          <Input name="link" className="w-48" placeholder="/produtos" />
+        <div style={{ width: 200 }}>
+          <label className={adminLabel}>Link (opcional)</label>
+          <input name="link" className={adminInput} placeholder="/produtos" />
         </div>
-        <Button type="submit" disabled={uploading}>
+        <button type="submit" disabled={uploading} className={`${adminBtnWine} disabled:pointer-events-none disabled:opacity-50`}>
           {uploading ? "Enviando..." : "+ Novo banner"}
-        </Button>
+        </button>
         {error ? <p className="w-full text-sm text-destructive">{error}</p> : null}
       </form>
     </div>

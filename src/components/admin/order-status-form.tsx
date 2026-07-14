@@ -1,9 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { adminBtnWine, adminCard, adminInput, adminLabel } from "@/components/admin/ui-styles";
 import { updateOrderStatusAction, type ActionState } from "@/app/admin/pedidos/actions";
 import type { Order } from "@/lib/types";
 
@@ -20,12 +19,12 @@ export function OrderStatusForm({ order }: { order: Order }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(updateOrderStatusAction, undefined);
 
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3 rounded-lg border p-4">
+    <form action={formAction} className={`${adminCard} flex flex-wrap items-end gap-3`}>
       <input type="hidden" name="id" value={order.id} />
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-muted-foreground">Status</label>
+      <div style={{ width: 220 }}>
+        <label className={adminLabel}>Status</label>
         <Select name="status" defaultValue={order.status}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full rounded-[9px] border-line focus-visible:border-wine focus-visible:ring-wine-tint">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -37,13 +36,13 @@ export function OrderStatusForm({ order }: { order: Order }) {
           </SelectContent>
         </Select>
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-muted-foreground">Código de rastreio</label>
-        <Input name="trackingCode" defaultValue={order.tracking_code ?? ""} className="w-48" />
+      <div style={{ width: 200 }}>
+        <label className={adminLabel}>Código de rastreio</label>
+        <input name="trackingCode" defaultValue={order.tracking_code ?? ""} className={adminInput} />
       </div>
-      <Button type="submit" disabled={pending}>
+      <button type="submit" disabled={pending} className={`${adminBtnWine} disabled:pointer-events-none disabled:opacity-50`}>
         {pending ? "Salvando..." : "Atualizar"}
-      </Button>
+      </button>
       {state?.error ? <p className="w-full text-sm text-destructive">{state.error}</p> : null}
     </form>
   );

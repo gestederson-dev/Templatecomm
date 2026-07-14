@@ -46,44 +46,51 @@ export function Hero() {
             Canecas, ecobags, cadernos e kits executivos com o logo da sua empresa. Compre pronto ou peça um orçamento sob medida.
           </p>
 
-          <div className="salmar-rise d4 mb-9 flex flex-wrap gap-3.5">
-            <a href="/produtos" className={btnWine}>
+          <div className="salmar-rise d4 mb-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-3.5">
+            <a href="/produtos" className={`${btnWine} w-full sm:w-auto`}>
               Ver catálogo
             </a>
-            <a href="/produtos?quote=1" className={btnAmber}>
+            <a href="/produtos?quote=1" className={`${btnAmber} w-full sm:w-auto`}>
               Peça seu orçamento
             </a>
           </div>
 
-          <div className="salmar-rise d5 flex flex-wrap gap-5 text-[13px] text-ink/60">
+          <div className="salmar-rise d5 hidden flex-wrap gap-5 text-[13px] text-ink/60 sm:flex">
             <CheckItem>Personalização com sua marca</CheckItem>
             <CheckItem>A partir de 25 unidades</CheckItem>
             <CheckItem>Entrega para todo o Brasil</CheckItem>
           </div>
         </div>
 
-        <div className="salmar-rise d3 relative grid h-[320px] place-items-center md:h-[430px]">
-          <div className="salmar-halo absolute h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle_at_50%_45%,var(--amber-tint),transparent_60%)] md:h-[440px] md:w-[440px]" />
+        <div>
+          <div className="salmar-rise d3 relative grid h-[220px] place-items-center sm:h-[320px] md:h-[430px]">
+            <div className="salmar-halo absolute h-[210px] w-[210px] rounded-full bg-[radial-gradient(circle_at_50%_45%,var(--amber-tint),transparent_60%)] sm:h-[300px] sm:w-[300px] md:h-[440px] md:w-[440px]" />
 
-          <div className="salmar-gem relative w-[240px] md:w-[330px]">
-            <Image src="/logo/salmar-heart-mark.png" alt="Salmar Personalizados" width={330} height={330} priority className="block w-full" />
+            <div className="salmar-gem relative w-[168px] sm:w-[240px] md:w-[330px]">
+              <Image src="/logo/salmar-heart-mark.png" alt="Salmar Personalizados" width={330} height={330} priority className="block w-full" />
+            </div>
+
+            <Glint className="left-[26%] top-[18%]" duration={2.6} />
+            <Glint className="left-[64%] top-[36%]" size={22} duration={3.1} delay={0.7} />
+            <Glint className="left-[56%] top-[12%]" size={16} duration={2.2} delay={1.3} />
+
+            <div
+              className="salmar-chip absolute right-[2%] top-8 z-[4] hidden rounded-full bg-wine px-4 py-2.5 text-xs font-semibold text-white shadow-[var(--shadow-brand-lift)] sm:block"
+              style={{ animationDelay: "0.8s" }}
+            >
+              Compra direta
+            </div>
+            <div
+              className="salmar-chip absolute bottom-11 left-[2%] z-[4] hidden rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-wine shadow-[var(--shadow-brand-lift)] sm:block"
+              style={{ animationDelay: "1.6s" }}
+            >
+              Sob orçamento
+            </div>
           </div>
 
-          <Glint className="left-[26%] top-[18%]" duration={2.6} />
-          <Glint className="left-[64%] top-[36%]" size={22} duration={3.1} delay={0.7} />
-          <Glint className="left-[56%] top-[12%]" size={16} duration={2.2} delay={1.3} />
-
-          <div
-            className="salmar-chip absolute right-[2%] top-8 z-[4] rounded-full bg-wine px-4 py-2.5 text-xs font-semibold text-white shadow-[var(--shadow-brand-lift)]"
-            style={{ animationDelay: "0.8s" }}
-          >
-            Compra direta
-          </div>
-          <div
-            className="salmar-chip absolute bottom-11 left-[2%] z-[4] rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-wine shadow-[var(--shadow-brand-lift)]"
-            style={{ animationDelay: "1.6s" }}
-          >
-            Sob orçamento
+          <div className="salmar-rise d5 flex justify-center gap-2.5 sm:hidden">
+            <span className="rounded-full bg-wine px-4 py-2 text-xs font-semibold text-white">Compra direta</span>
+            <span className="rounded-full border border-ink/10 bg-white px-4 py-2 text-xs font-semibold text-wine">Sob orçamento</span>
           </div>
         </div>
       </div>

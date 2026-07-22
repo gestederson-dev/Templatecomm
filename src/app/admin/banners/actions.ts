@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeFileName } from "@/lib/storage";
 
 export type ActionState = { error: string } | undefined;
 
@@ -13,7 +14,7 @@ export async function createBannerAction(formData: FormData): Promise<ActionStat
   if (!file || file.size === 0) return { error: "Selecione uma imagem." };
 
   const supabase = await createClient();
-  const path = `${Date.now()}-${file.name}`;
+  const path = `${Date.now()}-${sanitizeFileName(file.name)}`;
 
   const { error: uploadError } = await supabase.storage.from("banners").upload(path, file);
   if (uploadError) return { error: uploadError.message };

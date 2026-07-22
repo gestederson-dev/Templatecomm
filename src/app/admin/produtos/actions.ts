@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeFileName } from "@/lib/storage";
 
 export type ActionState = { error: string } | undefined;
 
@@ -80,7 +81,7 @@ export async function uploadProductImageAction(productId: string, formData: Form
   if (!file || file.size === 0) return { error: "Selecione um arquivo." };
 
   const supabase = await createClient();
-  const path = `${productId}/${Date.now()}-${file.name}`;
+  const path = `${productId}/${Date.now()}-${sanitizeFileName(file.name)}`;
 
   const { error: uploadError } = await supabase.storage.from("product-images").upload(path, file);
   if (uploadError) return { error: uploadError.message };

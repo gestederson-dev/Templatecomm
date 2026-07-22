@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeFileName } from "@/lib/storage";
 
 export type ActionState = { error: string } | { success: true } | undefined;
 
@@ -55,7 +56,7 @@ export async function uploadLogoAction(formData: FormData): Promise<{ error: str
   if (!file || file.size === 0) return { error: "Selecione um arquivo." };
 
   const supabase = await createClient();
-  const path = `logo-${Date.now()}-${file.name}`;
+  const path = `logo-${Date.now()}-${sanitizeFileName(file.name)}`;
 
   const { error: uploadError } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
   if (uploadError) return { error: uploadError.message };

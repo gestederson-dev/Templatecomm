@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { createQuoteAction } from "@/lib/quote-actions";
+import { sanitizeFileName } from "@/lib/storage";
 import { btnAmber } from "@/components/store/button-styles";
 import { storeInput, storeLabel } from "@/components/store/ui-styles";
 import type { ProductCustomizationOption } from "@/lib/types";
@@ -34,7 +35,7 @@ export function QuoteRequestForm({
     setError(null);
 
     const supabase = createClient();
-    const path = `${userId}/${Date.now()}-${file.name}`;
+    const path = `${userId}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error: uploadError } = await supabase.storage.from("quote-attachments").upload(path, file);
 
     setUploading(null);

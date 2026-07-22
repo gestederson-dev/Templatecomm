@@ -50,7 +50,10 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           <div className="mb-4 flex items-start justify-between">
             <div>
               <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Faturamento no período</h2>
-              <p className="mt-0.5 text-[12.5px] text-ink/52">Receita diária</p>
+              <p className="mt-0.5 text-[12.5px] text-ink/52">
+                Site: <span className="font-semibold tabular-nums text-ink/70">{formatBRL(metrics.siteRevenue)}</span> · WhatsApp/Manual:{" "}
+                <span className="font-semibold tabular-nums text-ink/70">{formatBRL(metrics.manualRevenue)}</span>
+              </p>
             </div>
             <div className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-[-0.02em] text-wine">{formatBRL(metrics.revenue)}</div>
           </div>

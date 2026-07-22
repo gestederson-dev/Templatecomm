@@ -25,17 +25,28 @@ const STATUS_TONE: Record<string, "warn" | "ok" | "info" | "wine" | "critical"> 
 
 const STATUSES: OrderStatus[] = ["pending", "paid", "processing", "shipped", "delivered", "canceled"];
 
+const ORIGIN_LABEL: Record<string, string> = {
+  direct: "Direta",
+  quote: "Orçamento",
+  manual: "WhatsApp/Manual",
+};
+
 export default async function AdminPedidosPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { status } = await searchParams;
   const orders = await getAdminOrders(status as OrderStatus | undefined);
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Pedidos</h1>
-        <p className="mt-0.5 text-[13px] text-ink/52">
-          {orders.length} pedido{orders.length === 1 ? "" : "s"}
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Pedidos</h1>
+          <p className="mt-0.5 text-[13px] text-ink/52">
+            {orders.length} pedido{orders.length === 1 ? "" : "s"}
+          </p>
+        </div>
+        <Link href="/admin/pedidos/novo" className="inline-flex items-center gap-2 rounded-[10px] bg-wine px-[18px] py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-px">
+          + Novo pedido
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-1.5 rounded-[10px] border border-line bg-white p-1">
@@ -83,7 +94,7 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
                   </Link>
                 </td>
                 <td className="px-4 py-3.5 text-ink/62">{new Date(order.created_at).toLocaleDateString("pt-BR")}</td>
-                <td className="px-4 py-3.5 text-ink/62">{order.origin === "quote" ? "Orçamento" : "Direta"}</td>
+                <td className="px-4 py-3.5 text-ink/62">{ORIGIN_LABEL[order.origin] ?? order.origin}</td>
                 <td className="px-4 py-3.5 font-[family-name:var(--font-display)] font-semibold tabular-nums text-wine">{formatBRL(order.total)}</td>
                 <td className="px-4 py-3.5">
                   <StatusPill tone={STATUS_TONE[order.status] ?? "wine"}>{STATUS_LABEL[order.status] ?? order.status}</StatusPill>

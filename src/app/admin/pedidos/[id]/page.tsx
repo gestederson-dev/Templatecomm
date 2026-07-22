@@ -23,6 +23,12 @@ const STATUS_TONE: Record<string, "warn" | "ok" | "info" | "wine" | "critical"> 
   canceled: "critical",
 };
 
+const ORIGIN_LABEL: Record<string, string> = {
+  direct: "Compra direta pelo site",
+  quote: "Convertido de orçamento",
+  manual: "Registrado manualmente (WhatsApp)",
+};
+
 export default async function AdminPedidoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const order = await getAdminOrderById(id);
@@ -34,6 +40,12 @@ export default async function AdminPedidoDetailPage({ params }: { params: Promis
       <div className="flex items-center gap-3">
         <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">{order.order_number}</h1>
         <StatusPill tone={STATUS_TONE[order.status] ?? "wine"}>{STATUS_LABEL[order.status] ?? order.status}</StatusPill>
+      </div>
+
+      <div className={`${adminCard} flex flex-col gap-1 text-sm`}>
+        <p className="text-ink/52">{ORIGIN_LABEL[order.origin] ?? order.origin}</p>
+        <p className="font-semibold text-ink">{order.profileName || order.customer_name || "Cliente não identificado"}</p>
+        {order.customer_phone ? <p className="text-ink/62">{order.customer_phone}</p> : null}
       </div>
 
       <div className={adminPanel}>
@@ -67,6 +79,12 @@ export default async function AdminPedidoDetailPage({ params }: { params: Promis
           <span>Frete</span>
           <span className="tabular-nums">{formatBRL(order.shipping_cost)}</span>
         </div>
+        {order.discount > 0 ? (
+          <div className="flex justify-between text-ink/70">
+            <span>Desconto</span>
+            <span className="tabular-nums">- {formatBRL(order.discount)}</span>
+          </div>
+        ) : null}
         <div className="flex justify-between border-t border-line pt-2.5 text-base font-semibold text-ink">
           <span>Total</span>
           <span className="font-[family-name:var(--font-display)] tabular-nums text-wine">{formatBRL(order.total)}</span>
@@ -85,6 +103,13 @@ export default async function AdminPedidoDetailPage({ params }: { params: Promis
       ) : null}
 
       {order.payment_status ? <p className="text-sm text-ink/52">Pagamento: {order.payment_status}</p> : null}
+      {order.payment_method ? <p className="text-sm text-ink/52">Forma de pagamento: {order.payment_method}</p> : null}
+      {order.notes ? (
+        <div className="text-sm text-ink/62">
+          <p className="font-semibold text-ink">Observações</p>
+          <p>{order.notes}</p>
+        </div>
+      ) : null}
 
       <OrderStatusForm order={order} />
     </div>

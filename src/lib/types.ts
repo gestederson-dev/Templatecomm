@@ -29,7 +29,7 @@ export type Address = {
 };
 
 export type OrderStatus = "pending" | "paid" | "processing" | "shipped" | "delivered" | "canceled";
-export type OrderOrigin = "direct" | "quote";
+export type OrderOrigin = "direct" | "quote" | "manual";
 
 export type OrderItem = {
   id: string;
@@ -58,6 +58,8 @@ export type Order = {
   payment_status: string | null;
   tracking_code: string | null;
   notes: string | null;
+  customer_name: string | null;
+  customer_phone: string | null;
   created_at: string;
   updated_at: string;
 };

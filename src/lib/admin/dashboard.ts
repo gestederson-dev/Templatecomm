@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 export type DashboardMetrics = {
   revenue: number;
   previousRevenue: number;
+  siteRevenue: number;
+  manualRevenue: number;
   orderCount: number;
   averageTicket: number;
   pendingQuotes: number;
@@ -31,7 +33,7 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
 
   const [{ data: orders }, { data: previousOrders }, { count: pendingQuotes }, { data: allQuotes }, { count: newCustomersCount }, { data: orderItems }, { data: recentOrdersRaw }] =
     await Promise.all([
-      supabase.from("orders").select("id, total, status, created_at").eq("status", "paid").gte("created_at", fromISO).lt("created_at", toISO),
+      supabase.from("orders").select("id, total, status, origin, created_at").eq("status", "paid").gte("created_at", fromISO).lt("created_at", toISO),
       supabase.from("orders").select("total").eq("status", "paid").gte("created_at", previousFrom.toISOString()).lt("created_at", previousTo.toISOString()),
       supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "requested"),
       supabase.from("quotes").select("status, created_at").gte("created_at", fromISO).lt("created_at", toISO),
@@ -44,13 +46,15 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
         .lt("orders.created_at", toISO),
       supabase
         .from("orders")
-        .select("id, order_number, total, status, origin, created_at, profile:profiles(full_name, company_name)")
+        .select("id, order_number, total, status, origin, created_at, customer_name, profile:profiles(full_name, company_name)")
         .order("created_at", { ascending: false })
         .limit(5),
     ]);
 
   const revenue = (orders ?? []).reduce((sum, o) => sum + o.total, 0);
   const previousRevenue = (previousOrders ?? []).reduce((sum, o) => sum + o.total, 0);
+  const manualRevenue = (orders ?? []).filter((o) => o.origin === "manual").reduce((sum, o) => sum + o.total, 0);
+  const siteRevenue = revenue - manualRevenue;
   const orderCount = orders?.length ?? 0;
   const averageTicket = orderCount > 0 ? revenue / orderCount : 0;
 
@@ -91,12 +95,13 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
     status: string;
     origin: string;
     created_at: string;
+    customer_name: string | null;
     profile: { full_name: string | null; company_name: string | null } | null;
   };
   const recentOrders = ((recentOrdersRaw ?? []) as unknown as RecentOrderRow[]).map((o) => ({
     id: o.id,
     orderNumber: o.order_number ?? "—",
-    customerName: o.profile?.company_name || o.profile?.full_name || "—",
+    customerName: o.profile?.company_name || o.profile?.full_name || o.customer_name || "—",
     origin: o.origin,
     total: o.total,
     status: o.status,
@@ -115,6 +120,8 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
   return {
     revenue,
     previousRevenue,
+    siteRevenue,
+    manualRevenue,
     orderCount,
     averageTicket,
     pendingQuotes: pendingQuotes ?? 0,

@@ -21,6 +21,12 @@ const STATUS_TONE: Record<string, "warn" | "ok" | "info" | "wine" | "critical"> 
   canceled: "critical",
 };
 
+const ORIGIN_LABEL: Record<string, string> = {
+  direct: "Direto",
+  quote: "Orçamento",
+  manual: "WhatsApp",
+};
+
 export function RecentOrdersTable({
   orders,
 }: {
@@ -51,7 +57,7 @@ export function RecentOrdersTable({
               </Link>
             </td>
             <td className="py-3 text-ink/78">{order.customerName}</td>
-            <td className="py-3 text-ink/62">{order.origin === "quote" ? "Orçamento" : "Direto"}</td>
+            <td className="py-3 text-ink/62">{ORIGIN_LABEL[order.origin] ?? order.origin}</td>
             <td className="py-3 font-[family-name:var(--font-display)] font-semibold text-ink">{formatBRL(order.total)}</td>
             <td className="py-3">
               <StatusPill tone={STATUS_TONE[order.status] ?? "wine"}>{STATUS_LABEL[order.status] ?? order.status}</StatusPill>

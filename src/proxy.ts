@@ -47,11 +47,20 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const precisaAuth = matchesRoute(pathname, "/conta") || matchesRoute(pathname, "/checkout");
-  const precisaAdmin = matchesRoute(pathname, "/admin");
+  // /admin/login é a própria tela de login do admin — nunca pode exigir auth,
+  // senão vira loop de redirecionamento.
+  const precisaAdmin = matchesRoute(pathname, "/admin") && pathname !== "/admin/login";
 
-  if ((precisaAuth || precisaAdmin) && !user) {
+  if (precisaAuth && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (precisaAdmin && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }

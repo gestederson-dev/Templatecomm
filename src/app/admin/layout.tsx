@@ -16,20 +16,22 @@ const NAV: AdminNavItem[] = [
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
 
-  const [{ count: pendingQuotes }, userResult] = await Promise.all([
-    supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "requested"),
-    supabase.auth.getUser(),
-  ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const user = userResult.data.user;
-  let displayName = "Admin";
-  if (user) {
-    const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
-    displayName = profile?.full_name || user.email || "Admin";
+  const profile = user ? (await supabase.from("profiles").select("full_name, role").eq("id", user.id).maybeSingle()).data : null;
+
+  // /admin/login é a única rota sob /admin acessível sem sessão de admin (o
+  // proxy garante isso pro resto) — sem o shell do painel em volta dela.
+  if (profile?.role !== "admin") {
+    return <>{children}</>;
   }
 
+  const { count: pendingQuotes } = await supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "requested");
+
   return (
-    <AdminShell nav={NAV} pendingQuotes={pendingQuotes ?? 0} displayName={displayName} email={user?.email}>
+    <AdminShell nav={NAV} pendingQuotes={pendingQuotes ?? 0} displayName={profile.full_name || user!.email || "Admin"} email={user?.email}>
       {children}
     </AdminShell>
   );

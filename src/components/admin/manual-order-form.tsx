@@ -20,6 +20,11 @@ const STATUSES = [
 
 const PAYMENT_METHODS = ["Pix", "Dinheiro", "Cartão de crédito", "Cartão de débito", "Transferência"];
 
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
+}
+
 export function ManualOrderForm({ customers, products }: { customers: Customer[]; products: ProductOption[] }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(createManualOrderAction, undefined);
 
@@ -98,15 +103,35 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
         {customerMode === "cadastrado" ? (
           <div className="flex flex-col gap-2.5">
             <input placeholder="Buscar cliente por nome..." value={customerSearch} onChange={(event) => setCustomerSearch(event.target.value)} className={adminInput} />
-            <select value={profileId} onChange={(event) => setProfileId(event.target.value)} className={adminInput} size={Math.min(6, Math.max(3, filteredCustomers.length || 1))}>
-              <option value="">Selecione um cliente...</option>
-              {filteredCustomers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.phone ? ` — ${c.phone}` : ""}
-                </option>
-              ))}
-            </select>
+            <div className="max-h-56 overflow-y-auto rounded-[9px] border border-line">
+              {filteredCustomers.length === 0 ? (
+                <p className="p-3 text-sm text-ink/45">Nenhum cliente encontrado.</p>
+              ) : (
+                filteredCustomers.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setProfileId(c.id)}
+                    className={`flex w-full items-center gap-3 border-b border-line px-3 py-2.5 text-left text-sm transition-colors last:border-b-0 ${
+                      profileId === c.id ? "bg-wine-tint" : "hover:bg-paper"
+                    }`}
+                  >
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-wine-tint font-[family-name:var(--font-display)] text-[11px] font-bold text-wine">
+                      {initialsOf(c.name)}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium text-ink">{c.name}</span>
+                      {c.phone ? <span className="block text-xs text-ink/52">{c.phone}</span> : null}
+                    </span>
+                    {profileId === c.id ? (
+                      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 stroke-wine" fill="none" strokeWidth={2.5}>
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                    ) : null}
+                  </button>
+                ))
+              )}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
@@ -179,10 +204,19 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
       </div>
 
       <div className={`${adminCard} flex flex-col gap-3.5`}>
-        <label className="flex items-center gap-2.5 text-sm font-semibold text-ink">
-          <input type="checkbox" checked={includeShipping} onChange={(event) => setIncludeShipping(event.target.checked)} className="h-4 w-4 rounded border-line" />
-          Incluir frete e endereço de entrega
-        </label>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={includeShipping}
+            aria-label="Incluir frete e endereço de entrega"
+            onClick={() => setIncludeShipping((prev) => !prev)}
+            className={`relative h-[22px] w-[38px] shrink-0 rounded-full transition-colors ${includeShipping ? "bg-ok" : "bg-ink/18"}`}
+          >
+            <span className={`absolute left-0.5 top-0.5 h-[18px] w-[18px] rounded-full bg-white transition-transform ${includeShipping ? "translate-x-4" : "translate-x-0"}`} />
+          </button>
+          <span className="text-sm font-semibold text-ink">Incluir frete e endereço de entrega</span>
+        </div>
 
         {includeShipping ? (
           <div className="grid grid-cols-2 gap-3">

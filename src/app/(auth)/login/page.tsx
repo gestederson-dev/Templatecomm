@@ -21,9 +21,14 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className={storeLabel}>
-            Senha
-          </label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label htmlFor="password" className={storeLabel.replace("mb-1.5 ", "")}>
+              Senha
+            </label>
+            <Link href="/esqueci-senha" className="text-xs font-semibold text-wine hover:underline">
+              Esqueceu a senha?
+            </Link>
+          </div>
           <input id="password" name="password" type="password" required className={`${storeInput} w-full`} />
         </div>
 

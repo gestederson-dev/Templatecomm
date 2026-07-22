@@ -32,3 +32,17 @@ export const signInSchema = z.object({
   email: z.string().trim().toLowerCase().email("E-mail inválido"),
   password: z.string().min(1, "Informe sua senha"),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email("E-mail inválido"),
+});
+
+export const newPasswordSchema = z
+  .object({
+    password: camposComuns.password,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });

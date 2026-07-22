@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { enderecoSchema } from "@/lib/validators/endereco";
+import { newPasswordSchema } from "@/lib/validators/auth";
 
 export type ActionState = { error: string } | { success: true } | undefined;
 
@@ -34,6 +35,24 @@ export async function updateProfileAction(_prevState: ActionState, formData: For
   if (error) return { error: error.message };
 
   revalidatePath("/conta");
+  return { success: true };
+}
+
+export async function changePasswordAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const parsed = newPasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+
+  if (error) return { error: error.message };
+
   return { success: true };
 }
 

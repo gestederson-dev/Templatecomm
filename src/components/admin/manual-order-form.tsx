@@ -3,11 +3,22 @@
 import { useActionState, useMemo, useState } from "react";
 import { createManualOrderAction, type ActionState } from "@/app/admin/pedidos/novo/actions";
 import { adminBtnSoft, adminBtnWine, adminCard, adminInput, adminLabel } from "@/components/admin/ui-styles";
+import { CustomizationFields } from "@/components/store/customization-fields";
 import { formatBRL } from "@/lib/format";
+import type { ProductCustomizationOption } from "@/lib/types";
 
 type Customer = { id: string; name: string; phone: string | null };
-type ProductOption = { id: string; name: string; sku: string | null; basePrice: number | null };
-type LineItem = { productId: string; productName: string; quantity: number; unitPrice: number };
+type ProductOption = { id: string; name: string; sku: string | null; basePrice: number | null; customizationOptions: ProductCustomizationOption[] };
+type LineItem = { productId: string; productName: string; quantity: number; unitPrice: number; customization?: Record<string, string> | null };
+
+function lineKey(item: Pick<LineItem, "productId" | "customization">): string {
+  if (!item.customization || Object.keys(item.customization).length === 0) return item.productId;
+  const sorted = Object.keys(item.customization)
+    .sort()
+    .map((key) => `${key}=${item.customization?.[key]}`)
+    .join("&");
+  return `${item.productId}::${sorted}`;
+}
 
 const STATUSES = [
   { value: "paid", label: "Pago" },
@@ -36,6 +47,8 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
 
   const [items, setItems] = useState<LineItem[]>([]);
   const [pickProductId, setPickProductId] = useState("");
+  const [pendingCustomization, setPendingCustomization] = useState<Record<string, string>>({});
+  const [customizationError, setCustomizationError] = useState<string | null>(null);
 
   const [includeShipping, setIncludeShipping] = useState(false);
   const [shippingCost, setShippingCost] = useState("0");
@@ -47,25 +60,42 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
     return customers.filter((c) => c.name.toLowerCase().includes(term));
   }, [customerSearch, customers]);
 
+  const pickedProduct = products.find((p) => p.id === pickProductId);
+  const pickedProductOptions = (pickedProduct?.customizationOptions ?? []).filter((o) => o.type !== "logo_upload");
+
   function addItem() {
     const product = products.find((p) => p.id === pickProductId);
     if (!product) return;
+
+    const missing = pickedProductOptions.find((option) => option.required && !pendingCustomization[option.name]);
+    if (missing) {
+      setCustomizationError(`Selecione "${missing.name}".`);
+      return;
+    }
+    setCustomizationError(null);
+
+    const customization = Object.keys(pendingCustomization).length > 0 ? pendingCustomization : null;
+    const key = lineKey({ productId: product.id, customization });
+
     setItems((prev) => {
-      const existing = prev.find((i) => i.productId === product.id);
+      const existing = prev.find((i) => lineKey(i) === key);
       if (existing) {
-        return prev.map((i) => (i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i));
+        return prev.map((i) => (lineKey(i) === key ? { ...i, quantity: i.quantity + 1 } : i));
       }
-      return [...prev, { productId: product.id, productName: product.name, quantity: 1, unitPrice: product.basePrice ?? 0 }];
+      return [...prev, { productId: product.id, productName: product.name, quantity: 1, unitPrice: product.basePrice ?? 0, customization }];
     });
     setPickProductId("");
+    setPendingCustomization({});
   }
 
-  function updateItem(productId: string, patch: Partial<LineItem>) {
-    setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, ...patch } : i)));
+  function updateItem(item: LineItem, patch: Partial<LineItem>) {
+    const key = lineKey(item);
+    setItems((prev) => prev.map((i) => (lineKey(i) === key ? { ...i, ...patch } : i)));
   }
 
-  function removeItem(productId: string) {
-    setItems((prev) => prev.filter((i) => i.productId !== productId));
+  function removeItem(item: LineItem) {
+    const key = lineKey(item);
+    setItems((prev) => prev.filter((i) => lineKey(i) !== key));
   }
 
   const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
@@ -150,7 +180,15 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
       <div className={`${adminCard} flex flex-col gap-3.5`}>
         <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Produtos</h2>
         <div className="flex gap-2.5">
-          <select value={pickProductId} onChange={(event) => setPickProductId(event.target.value)} className={`${adminInput} flex-1`}>
+          <select
+            value={pickProductId}
+            onChange={(event) => {
+              setPickProductId(event.target.value);
+              setPendingCustomization({});
+              setCustomizationError(null);
+            }}
+            className={`${adminInput} flex-1`}
+          >
             <option value="">Selecione um produto...</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>
@@ -164,16 +202,38 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
           </button>
         </div>
 
+        {pickedProductOptions.length > 0 ? (
+          <div className="flex flex-col gap-3 rounded-xl border border-line bg-paper p-3.5">
+            <CustomizationFields
+              options={pickedProductOptions}
+              values={pendingCustomization}
+              onChange={(name, value) => setPendingCustomization((prev) => ({ ...prev, [name]: value }))}
+            />
+            {customizationError ? <p className="text-sm text-destructive">{customizationError}</p> : null}
+          </div>
+        ) : null}
+
         {items.length > 0 ? (
           <div className="flex flex-col gap-2">
             {items.map((item) => (
-              <div key={item.productId} className="grid grid-cols-[1fr_72px_110px_96px_32px] items-center gap-2.5 rounded-xl border border-line p-2.5 text-sm">
-                <span className="font-medium text-ink">{item.productName}</span>
+              <div key={lineKey(item)} className="grid grid-cols-[1fr_72px_110px_96px_32px] items-center gap-2.5 rounded-xl border border-line p-2.5 text-sm">
+                <div>
+                  <span className="font-medium text-ink">{item.productName}</span>
+                  {item.customization && Object.keys(item.customization).length > 0 ? (
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      {Object.entries(item.customization).map(([key, val]) => (
+                        <span key={key} className="rounded-md bg-ink/5 px-2 py-0.5 text-[11px] font-medium text-ink/60">
+                          {key}: {val}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
                 <input
                   type="number"
                   min={1}
                   value={item.quantity}
-                  onChange={(event) => updateItem(item.productId, { quantity: Math.max(1, Number(event.target.value) || 1) })}
+                  onChange={(event) => updateItem(item, { quantity: Math.max(1, Number(event.target.value) || 1) })}
                   className={`${adminInput} px-2 py-1.5 text-center`}
                 />
                 <input
@@ -181,13 +241,13 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
                   min={0}
                   step="0.01"
                   value={item.unitPrice}
-                  onChange={(event) => updateItem(item.productId, { unitPrice: Math.max(0, Number(event.target.value) || 0) })}
+                  onChange={(event) => updateItem(item, { unitPrice: Math.max(0, Number(event.target.value) || 0) })}
                   className={`${adminInput} px-2 py-1.5`}
                 />
                 <span className="text-right font-semibold tabular-nums text-wine">{formatBRL(item.quantity * item.unitPrice)}</span>
                 <button
                   type="button"
-                  onClick={() => removeItem(item.productId)}
+                  onClick={() => removeItem(item)}
                   aria-label="Remover produto"
                   className="grid h-8 w-8 place-items-center rounded-lg text-ink/45 hover:bg-destructive/10 hover:text-destructive"
                 >

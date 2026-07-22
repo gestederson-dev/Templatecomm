@@ -1,9 +1,9 @@
 import { ManualOrderForm } from "@/components/admin/manual-order-form";
 import { getAdminCustomers } from "@/lib/admin/customers";
-import { getAdminProducts } from "@/lib/admin/products";
+import { getAdminProductsForOrderPicker } from "@/lib/admin/products";
 
 export default async function NovoPedidoPage() {
-  const [customers, products] = await Promise.all([getAdminCustomers(), getAdminProducts({ status: "active" })]);
+  const [customers, products] = await Promise.all([getAdminCustomers(), getAdminProductsForOrderPicker()]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -14,7 +14,7 @@ export default async function NovoPedidoPage() {
 
       <ManualOrderForm
         customers={customers.map((c) => ({ id: c.id, name: c.company_name || c.full_name || "(sem nome)", phone: c.phone }))}
-        products={products.map((p) => ({ id: p.id, name: p.name, sku: p.sku, basePrice: p.base_price }))}
+        products={products.map((p) => ({ id: p.id, name: p.name, sku: p.sku, basePrice: p.base_price, customizationOptions: p.customization_options }))}
       />
     </div>
   );

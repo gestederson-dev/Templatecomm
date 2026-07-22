@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { ProductWithRelations, Category, Product, ProductImage } from "@/lib/types";
+import type { ProductWithRelations, Category, Product, ProductImage, ProductCustomizationOption } from "@/lib/types";
 
 export type AdminProductListItem = Product & { category: Pick<Category, "name" | "slug"> | null; primary_image: ProductImage | null };
 
@@ -32,6 +32,27 @@ export async function getAdminProducts(filters: AdminProductFilters = {}): Promi
     const { product_images, ...product } = row;
     const primary = (product_images ?? []).find((img) => img.is_primary) ?? product_images?.[0] ?? null;
     return { ...product, primary_image: primary };
+  });
+}
+
+export type AdminProductPickerItem = Pick<Product, "id" | "name" | "sku" | "base_price"> & { customization_options: ProductCustomizationOption[] };
+
+/** Lista enxuta pro seletor de produtos do pedido manual — inclui as opções de personalização (cor, etc.) de cada produto. */
+export async function getAdminProductsForOrderPicker(): Promise<AdminProductPickerItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, name, sku, base_price, product_customization_options(id, product_id, name, type, options, required, sort_order)")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+
+  type RawRow = Pick<Product, "id" | "name" | "sku" | "base_price"> & { product_customization_options: ProductCustomizationOption[] };
+
+  return (data as unknown as RawRow[]).map((row) => {
+    const { product_customization_options, ...product } = row;
+    return { ...product, customization_options: (product_customization_options ?? []).sort((a, b) => a.sort_order - b.sort_order) };
   });
 }
 

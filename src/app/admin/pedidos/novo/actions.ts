@@ -12,6 +12,7 @@ type ManualOrderItemInput = {
   productName: string;
   quantity: number;
   unitPrice: number;
+  customization?: Record<string, string> | null;
 };
 
 const VALID_STATUSES: OrderStatus[] = ["pending", "paid", "processing", "shipped", "delivered", "canceled"];
@@ -95,6 +96,7 @@ export async function createManualOrderAction(_prevState: ActionState, formData:
       quantity: item.quantity,
       unit_price: item.unitPrice,
       total: item.quantity * item.unitPrice,
+      customization: item.customization ?? null,
     })),
   );
 

@@ -45,3 +45,14 @@ export async function toggleCategoryActiveAction(id: string, isActive: boolean):
   await supabase.from("categories").update({ is_active: isActive }).eq("id", id);
   revalidatePath("/admin/categorias");
 }
+
+export async function deleteCategoryAction(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const supabase = await createClient();
+  // produtos e subcategorias não são apagados — só perdem a referência
+  // (category_id/parent_id viram null, via ON DELETE SET NULL no schema).
+  await supabase.from("categories").delete().eq("id", id);
+  revalidatePath("/admin/categorias");
+  revalidatePath("/");
+}

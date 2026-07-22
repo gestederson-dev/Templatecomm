@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleActiveButton } from "@/components/admin/toggle-active-button";
 import { adminBtnSoft, adminBtnWine, adminCard, adminInput, adminLabel, adminPanel } from "@/components/admin/ui-styles";
-import { saveCategoryAction, toggleCategoryActiveAction, type ActionState } from "@/app/admin/categorias/actions";
+import { deleteCategoryAction, saveCategoryAction, toggleCategoryActiveAction, type ActionState } from "@/app/admin/categorias/actions";
 import type { Category } from "@/lib/types";
 
 function CategoryForm({ category, categories, onDone }: { category?: Category; categories: Category[]; onDone?: () => void }) {
@@ -90,6 +90,17 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                 <button type="button" onClick={() => setEditingId(category.id)} className="text-sm font-semibold text-wine hover:underline">
                   Editar
                 </button>
+                <form
+                  action={deleteCategoryAction}
+                  onSubmit={(event) => {
+                    if (!confirm(`Excluir "${category.name}"? Produtos dessa categoria ficam sem categoria.`)) event.preventDefault();
+                  }}
+                >
+                  <input type="hidden" name="id" value={category.id} />
+                  <button type="submit" className="text-sm font-semibold text-destructive hover:underline">
+                    Excluir
+                  </button>
+                </form>
               </div>
             </div>
           ),

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleActiveButton } from "@/components/admin/toggle-active-button";
 import { adminBtnSoft, adminBtnWine, adminCard, adminInput, adminLabel, adminPanel } from "@/components/admin/ui-styles";
@@ -87,8 +88,14 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                   action={toggleCategoryActiveAction}
                   label={category.is_active ? "Desativar" : "Ativar"}
                 />
-                <button type="button" onClick={() => setEditingId(category.id)} className="text-sm font-semibold text-wine hover:underline">
-                  Editar
+                <button
+                  type="button"
+                  onClick={() => setEditingId(category.id)}
+                  aria-label={`Editar ${category.name}`}
+                  title="Editar"
+                  className="grid h-8 w-8 place-items-center rounded-lg text-ink/52 hover:bg-wine-tint hover:text-wine"
+                >
+                  <Pencil className="h-4 w-4" />
                 </button>
                 <form
                   action={deleteCategoryAction}
@@ -97,8 +104,13 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                   }}
                 >
                   <input type="hidden" name="id" value={category.id} />
-                  <button type="submit" className="text-sm font-semibold text-destructive hover:underline">
-                    Excluir
+                  <button
+                    type="submit"
+                    aria-label={`Excluir ${category.name}`}
+                    title="Excluir"
+                    className="grid h-8 w-8 place-items-center rounded-lg text-ink/52 hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </form>
               </div>

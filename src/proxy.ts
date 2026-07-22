@@ -21,7 +21,20 @@ function matchesRoute(pathname: string, prefix: string): boolean {
  * não conseguem escrever cookie de forma confiável a cada request, só o
  * proxy consegue.
  */
+// domínio antigo da Vercel — mantido vivo pela própria Vercel, então
+// redirecionamos pro domínio próprio em vez de deixar acessível em paralelo.
+const OLD_HOST = "salmar-brindes.vercel.app";
+const CANONICAL_HOST = "salmarbrindes.com.br";
+
 export async function proxy(request: NextRequest) {
+  if (request.nextUrl.hostname === OLD_HOST) {
+    const url = request.nextUrl.clone();
+    url.hostname = CANONICAL_HOST;
+    url.port = "";
+    url.protocol = "https";
+    return NextResponse.redirect(url, 308);
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(requireEnv("NEXT_PUBLIC_SUPABASE_URL"), requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"), {

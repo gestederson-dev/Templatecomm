@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CategoryIcon } from "@/components/store/category-icon";
-import { BrandStamp } from "@/components/store/brand-stamp";
 import { formatBRL } from "@/lib/format";
 import type { ProductListItem } from "@/lib/types";
 
@@ -20,7 +19,7 @@ export function ProductCard({ product, index = 0 }: { product: ProductListItem; 
       href={`/produto/${product.slug}`}
       className="group flex flex-col overflow-hidden rounded-[20px] bg-white shadow-[var(--shadow-brand)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-brand-lift)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wine focus-visible:ring-offset-2"
     >
-      <div className={`salmar-facets relative flex h-[212px] items-center justify-center overflow-hidden ${product.primary_image ? "bg-muted" : gradient}`}>
+      <div className={`relative flex h-[212px] items-center justify-center overflow-hidden ${product.primary_image ? "bg-muted" : gradient}`}>
         {product.primary_image ? (
           <Image
             src={product.primary_image.url}
@@ -39,7 +38,6 @@ export function ProductCard({ product, index = 0 }: { product: ProductListItem; 
         {showBrandMotif ? (
           <span className="absolute left-3.5 top-3.5 z-[2] rounded-full bg-amber px-3 py-1.5 text-[11.5px] font-semibold text-ink">Personalizável</span>
         ) : null}
-        {showBrandMotif ? <BrandStamp /> : null}
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-5">

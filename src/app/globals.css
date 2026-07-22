@@ -175,19 +175,6 @@
    Tudo aqui respeita prefers-reduced-motion (regra no final).
    ========================================================== */
 
-.salmar-facets {
-  position: relative;
-}
-.salmar-facets::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    repeating-linear-gradient(60deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 26px),
-    repeating-linear-gradient(-60deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 26px);
-}
-
 .salmar-rise {
   opacity: 0;
   transform: translateY(18px);

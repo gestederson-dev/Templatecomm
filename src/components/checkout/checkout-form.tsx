@@ -78,7 +78,7 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
       addressId,
       shippingCost: shippingOption.price,
       shippingService: shippingOption.service,
-      items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+      items: items.map((item) => ({ productId: item.productId, quantity: item.quantity, customization: item.customization })),
     });
 
     if ("error" in result) {

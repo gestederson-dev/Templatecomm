@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { cartTotalPrice, useCartStore } from "@/stores/cart";
+import { cartItemKey, cartTotalPrice, useCartStore } from "@/stores/cart";
 import { formatBRL } from "@/lib/format";
 import { btnOutline, btnWine } from "@/components/store/button-styles";
 import { storeInput } from "@/components/store/ui-styles";
@@ -29,7 +29,7 @@ export function CartView() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col divide-y divide-ink/8 overflow-hidden rounded-2xl border border-ink/8 bg-white shadow-[var(--shadow-brand)]">
         {items.map((item) => (
-          <div key={item.productId} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
+          <div key={cartItemKey(item)} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
             <div className="flex items-center gap-4">
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-paper">
                 {item.imageUrl ? (
@@ -43,12 +43,21 @@ export function CartView() {
                 <Link href={`/produto/${item.slug}`} className="text-sm font-semibold text-ink hover:text-wine">
                   {item.name}
                 </Link>
+                {item.customization && Object.keys(item.customization).length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(item.customization).map(([key, val]) => (
+                      <span key={key} className="rounded-md bg-ink/5 px-2 py-0.5 text-[11px] font-medium text-ink/60">
+                        {key}: {val}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 <span className="text-sm text-ink/52 tabular-nums">{formatBRL(item.unitPrice)} / un.</span>
               </div>
 
               <button
                 type="button"
-                onClick={() => removeItem(item.productId)}
+                onClick={() => removeItem(item.productId, item.customization)}
                 aria-label={`Remover ${item.name}`}
                 className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink/40 transition-colors hover:bg-destructive/10 hover:text-destructive sm:hidden"
               >
@@ -63,7 +72,7 @@ export function CartView() {
                 type="number"
                 min={1}
                 value={item.quantity}
-                onChange={(event) => setQuantity(item.productId, Math.max(1, Number(event.target.value) || 1))}
+                onChange={(event) => setQuantity(item.productId, Math.max(1, Number(event.target.value) || 1), item.customization)}
                 className={`${storeInput} w-16 px-2 py-1.5 text-center`}
                 aria-label={`Quantidade de ${item.name}`}
               />
@@ -74,7 +83,7 @@ export function CartView() {
 
               <button
                 type="button"
-                onClick={() => removeItem(item.productId)}
+                onClick={() => removeItem(item.productId, item.customization)}
                 className="hidden text-sm font-semibold text-ink/45 transition-colors hover:text-destructive sm:inline-block"
               >
                 Remover

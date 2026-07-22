@@ -76,6 +76,7 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
                   slug={product.slug}
                   unitPrice={product.base_price}
                   imageUrl={product.images[0]?.url ?? null}
+                  customizationOptions={product.customization_options}
                 />
               ) : (
                 <span className="rounded-full border border-ink/12 px-5 py-3 text-center text-sm font-semibold text-ink/45">Preço sob consulta</span>

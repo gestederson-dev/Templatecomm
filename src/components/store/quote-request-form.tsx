@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { createQuoteAction } from "@/lib/quote-actions";
 import { sanitizeFileName } from "@/lib/storage";
 import { btnAmber } from "@/components/store/button-styles";
 import { storeInput, storeLabel } from "@/components/store/ui-styles";
+import { CustomizationFields } from "@/components/store/customization-fields";
 import type { ProductCustomizationOption } from "@/lib/types";
 
 export function QuoteRequestForm({
@@ -85,46 +85,13 @@ export function QuoteRequestForm({
         />
       </div>
 
-      {options.map((option) => (
-        <div key={option.id}>
-          <label className={storeLabel}>
-            {option.name}
-            {option.required ? " *" : ""}
-          </label>
-
-          {(option.type === "select" || option.type === "color") && option.options ? (
-            <Select
-              value={values[option.name] ?? ""}
-              onValueChange={(value) => setValues((prev) => ({ ...prev, [option.name]: value ?? "" }))}
-              items={option.options.map((value) => ({ value, label: value }))}
-            >
-              <SelectTrigger className="w-full rounded-xl border-ink/12 focus-visible:border-wine focus-visible:ring-wine/40">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {option.options.map((value) => (
-                  <SelectItem key={value} value={value}>
-                    {value}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          ) : option.type === "logo_upload" ? (
-            <>
-              <input
-                type="file"
-                accept="image/*,.pdf,.ai,.eps"
-                onChange={(event) => handleFileChange(option.name, event.target.files?.[0] ?? null)}
-                className="text-sm text-ink/70 file:mr-3 file:rounded-full file:border-0 file:bg-wine-tint file:px-3.5 file:py-1.5 file:text-[13px] file:font-semibold file:text-wine"
-              />
-              {uploading === option.name ? <span className="mt-1 block text-xs text-ink/50">Enviando...</span> : null}
-              {values[option.name] ? <span className="mt-1 block text-xs font-semibold text-ok">Arquivo enviado ✓</span> : null}
-            </>
-          ) : (
-            <input value={values[option.name] ?? ""} onChange={(event) => setValues((prev) => ({ ...prev, [option.name]: event.target.value }))} className={`${storeInput} w-full`} />
-          )}
-        </div>
-      ))}
+      <CustomizationFields
+        options={options}
+        values={values}
+        onChange={(name, value) => setValues((prev) => ({ ...prev, [name]: value }))}
+        onFileChange={handleFileChange}
+        uploading={uploading}
+      />
 
       <div>
         <label className={storeLabel}>Mensagem (opcional)</label>

@@ -38,7 +38,7 @@ export type CreateOrderInput = {
   addressId: string;
   shippingCost: number;
   shippingService: string;
-  items: { productId: string; quantity: number }[];
+  items: { productId: string; quantity: number; customization?: Record<string, string> | null }[];
 };
 
 export type CreateOrderState = { checkoutUrl: string } | { error: string };
@@ -64,7 +64,7 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
     );
   if (productsError) return { error: productsError.message };
 
-  const orderItemsInput: { product_id: string; product_name: string; quantity: number; unit_price: number; total: number }[] = [];
+  const orderItemsInput: { product_id: string; product_name: string; quantity: number; unit_price: number; total: number; customization: Record<string, string> | null }[] = [];
 
   for (const item of input.items) {
     const product = products?.find((p) => p.id === item.productId);
@@ -77,6 +77,7 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
       quantity: item.quantity,
       unit_price: product.base_price,
       total: product.base_price * item.quantity,
+      customization: item.customization ?? null,
     });
   }
 

@@ -39,9 +39,20 @@ export default async function AdminPedidoDetailPage({ params }: { params: Promis
       <div className={adminPanel}>
         {order.items.map((item, index) => (
           <div key={item.id} className={`flex items-center justify-between gap-3 px-4 py-3.5 text-sm ${index > 0 ? "border-t border-line" : ""}`}>
-            <span className="text-ink">
-              {item.product_name} <span className="text-ink/52">× {item.quantity}</span>
-            </span>
+            <div className="text-ink">
+              <span>
+                {item.product_name} <span className="text-ink/52">× {item.quantity}</span>
+              </span>
+              {item.customization && Object.keys(item.customization).length > 0 ? (
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {Object.entries(item.customization).map(([key, val]) => (
+                    <span key={key} className="rounded-md bg-ink/5 px-2 py-0.5 text-[11px] font-medium text-ink/60">
+                      {key}: {val}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <span className="font-[family-name:var(--font-display)] font-semibold tabular-nums text-wine">{formatBRL(item.total)}</span>
           </div>
         ))}

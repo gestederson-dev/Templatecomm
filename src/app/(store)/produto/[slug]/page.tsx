@@ -51,15 +51,16 @@ export default async function ProdutoPage({ params }: { params: Promise<{ slug: 
       ) : null}
 
       <div className="mt-4 grid gap-10 lg:grid-cols-2">
-        <ProductGallery images={product.images} productName={product.name} />
+        <div className="flex flex-col gap-4">
+          <ProductGallery images={product.images} productName={product.name} />
+          {product.description ? <p className="text-sm leading-relaxed text-ink/65">{product.description}</p> : null}
+        </div>
 
         <div className="flex flex-col gap-6">
           <div>
             <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">{product.name}</h1>
             {product.sku ? <p className="mt-1 text-xs text-ink/45">SKU: {product.sku}</p> : null}
           </div>
-
-          {product.description ? <p className="text-sm leading-relaxed text-ink/65">{product.description}</p> : null}
 
           {product.allow_direct_sale ? (
             <div className={`${storeCard} flex flex-col gap-3.5`}>

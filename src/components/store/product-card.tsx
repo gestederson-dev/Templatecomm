@@ -19,7 +19,7 @@ export function ProductCard({ product, index = 0 }: { product: ProductListItem; 
       href={`/produto/${product.slug}`}
       className="group flex flex-col overflow-hidden rounded-[20px] bg-white shadow-[var(--shadow-brand)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[var(--shadow-brand-lift)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wine focus-visible:ring-offset-2"
     >
-      <div className={`relative flex h-[212px] items-center justify-center overflow-hidden ${product.primary_image ? "bg-muted" : gradient}`}>
+      <div className={`relative flex aspect-square items-center justify-center overflow-hidden ${product.primary_image ? "bg-muted" : gradient}`}>
         {product.primary_image ? (
           <Image
             src={product.primary_image.url}

@@ -1,5 +1,6 @@
 import "server-only";
 import type { ShippingOption, ShippingProvider, ShippingQuoteInput } from "./types";
+import { getValidAccessToken, melhorEnvioBaseUrl } from "./melhor-envio-token";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -7,10 +8,6 @@ function requireEnv(name: string): string {
     throw new Error(`${name} não definida.`);
   }
   return value;
-}
-
-function baseUrl(): string {
-  return process.env.MELHOR_ENVIO_BASE_URL ?? "https://sandbox.melhorenvio.com.br";
 }
 
 // Caixa padrão usada quando o produto não tem `dimensions` cadastrada (cm).
@@ -26,10 +23,11 @@ type MelhorEnvioQuoteResponse = {
 
 export const melhorEnvioProvider: ShippingProvider = {
   async quote(input: ShippingQuoteInput): Promise<ShippingOption[]> {
-    const response = await fetch(`${baseUrl()}/api/v2/me/shipment/calculate`, {
+    const accessToken = await getValidAccessToken();
+    const response = await fetch(`${melhorEnvioBaseUrl()}/api/v2/me/shipment/calculate`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${requireEnv("MELHOR_ENVIO_TOKEN")}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
         Accept: "application/json",
         "User-Agent": `Salmar Brindes (${process.env.NEXT_PUBLIC_SITE_URL ?? "contato@salmarbrindes.com.br"})`,

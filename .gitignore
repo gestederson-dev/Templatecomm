@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# credenciais externas (Resend, etc.) — nunca commitar
+.credentials
+
 # vercel
 .vercel
 

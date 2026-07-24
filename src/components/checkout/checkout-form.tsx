@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { cartTotalPrice, useCartStore } from "@/stores/cart";
 import { formatBRL } from "@/lib/format";
@@ -13,6 +13,34 @@ import { PaymentBrick } from "./payment-brick";
 
 type OrderCreated = { orderId: string; orderNumber: string; total: number; payerEmail: string };
 type PaymentSuccess = Extract<ProcessPaymentState, { status: string }>;
+
+// Guarda o resultado do pagamento por um tempo — se a aba recarregar logo depois
+// do Pix/boleto aparecer (comum no celular, ao trocar pro app do banco e voltar),
+// o React perde todo o estado em memória. Sem isso, a tela mostra "carrinho
+// vazio" (o carrinho já foi limpo) mesmo com o pagamento certo em andamento.
+const CHECKOUT_RESULT_STORAGE_KEY = "salmar-brindes-checkout-result";
+const CHECKOUT_RESULT_TTL_MS = 2 * 60 * 60 * 1000;
+
+function readStoredResult(): { order: OrderCreated; paymentResult: PaymentSuccess } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(CHECKOUT_RESULT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { order: OrderCreated; paymentResult: PaymentSuccess; savedAt: number };
+    if (Date.now() - parsed.savedAt > CHECKOUT_RESULT_TTL_MS) return null;
+    return { order: parsed.order, paymentResult: parsed.paymentResult };
+  } catch {
+    return null;
+  }
+}
+
+function clearStoredResult() {
+  try {
+    sessionStorage.removeItem(CHECKOUT_RESULT_STORAGE_KEY);
+  } catch {
+    // sessionStorage indisponível (ex.: modo privado) — sem problema, é só rede de segurança.
+  }
+}
 
 export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   const items = useCartStore((state) => state.items);
@@ -27,6 +55,25 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   const [order, setOrder] = useState<OrderCreated | null>(null);
   const [paymentResult, setPaymentResult] = useState<PaymentSuccess | null>(null);
   const [brickAttempt, setBrickAttempt] = useState(0);
+
+  // Recupera o resultado do pagamento se a aba recarregou (ver comentário acima).
+  useEffect(() => {
+    const stored = readStoredResult();
+    if (stored) {
+      setOrder(stored.order);
+      setPaymentResult(stored.paymentResult);
+    }
+  }, []);
+
+  // Se voltou pra cá com o carrinho cheio (compra nova), o resultado recuperado é de um
+  // pedido antigo — descarta pra não travar o cliente numa tela de pagamento já resolvida.
+  useEffect(() => {
+    if (paymentResult && items.length > 0) {
+      setOrder(null);
+      setPaymentResult(null);
+      clearStoredResult();
+    }
+  }, [items, paymentResult]);
 
   const subtotal = cartTotalPrice(items);
   const shippingOption = shippingIndex != null ? shippingOptions?.[shippingIndex] : null;
@@ -84,6 +131,7 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
     if (!shippingOption) return;
     setSubmitting(true);
     setError(null);
+    clearStoredResult();
 
     const result = await createOrderAction({
       addressId,
@@ -107,6 +155,13 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
     if (!("error" in result)) {
       clearCart();
       setPaymentResult(result);
+      if (order) {
+        try {
+          sessionStorage.setItem(CHECKOUT_RESULT_STORAGE_KEY, JSON.stringify({ order, paymentResult: result, savedAt: Date.now() }));
+        } catch {
+          // sessionStorage indisponível — sem problema, é só rede de segurança pra reload.
+        }
+      }
     }
     return result;
   }
@@ -114,6 +169,7 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
   function handleTentarNovamente() {
     setPaymentResult(null);
     setBrickAttempt((n) => n + 1);
+    clearStoredResult();
   }
 
   if (order) {

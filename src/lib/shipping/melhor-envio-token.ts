@@ -22,10 +22,16 @@ type TokenResponse = {
 };
 
 async function exchangeToken(body: Record<string, string>): Promise<TokenResponse> {
-  const form = new URLSearchParams(body);
+  // API roda em Laravel Passport e espera multipart/form-data no /oauth/token
+  // (confirmado na SDK de referência) — urlencoded falha com "invalid_client".
+  const form = new FormData();
+  for (const [key, value] of Object.entries(body)) {
+    form.append(key, value);
+  }
+
   const response = await fetch(`${melhorEnvioBaseUrl()}/oauth/token`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    headers: { Accept: "application/json" },
     body: form,
   });
 

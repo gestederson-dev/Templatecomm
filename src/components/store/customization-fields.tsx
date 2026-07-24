@@ -2,7 +2,50 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { storeInput, storeLabel } from "@/components/store/ui-styles";
+import { hexForColorName } from "@/lib/color-names";
+import { contrastingForeground } from "@/lib/color";
 import type { ProductCustomizationOption } from "@/lib/types";
+
+function ColorSwatches({ option, value, onSelect }: { option: ProductCustomizationOption; value: string; onSelect: (value: string) => void }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2.5">
+        {(option.options ?? []).map((colorName) => {
+          const hex = hexForColorName(colorName);
+          const selected = value === colorName;
+          const checkColor = hex ? contrastingForeground(hex) : "#7f1d1d";
+
+          return (
+            <button
+              key={colorName}
+              type="button"
+              onClick={() => onSelect(colorName)}
+              title={colorName}
+              aria-label={colorName}
+              aria-pressed={selected}
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 transition-all ${
+                selected ? "border-wine ring-2 ring-wine/25 ring-offset-2 ring-offset-paper" : "border-ink/15 hover:border-ink/35"
+              }`}
+              style={hex ? { backgroundColor: hex } : undefined}
+            >
+              {!hex ? <span className="text-[9px] font-semibold uppercase text-ink/50">{colorName.slice(0, 2)}</span> : null}
+              {selected ? (
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" strokeWidth={2.5} style={{ stroke: checkColor }}>
+                  <path d="M5 12l5 5L20 7" />
+                </svg>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+      {value ? (
+        <p className="text-xs text-ink/52">
+          Selecionado: <span className="font-semibold text-ink">{value}</span>
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 export function CustomizationFields({
   options,
@@ -26,7 +69,9 @@ export function CustomizationFields({
             {option.required ? " *" : ""}
           </label>
 
-          {(option.type === "select" || option.type === "color") && option.options ? (
+          {option.type === "color" && option.options ? (
+            <ColorSwatches option={option} value={values[option.name] ?? ""} onSelect={(value) => onChange(option.name, value)} />
+          ) : option.type === "select" && option.options ? (
             <Select
               value={values[option.name] ?? ""}
               onValueChange={(value) => onChange(option.name, value ?? "")}

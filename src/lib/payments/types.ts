@@ -33,4 +33,6 @@ export type ProcessPaymentResult = {
 export interface PaymentProvider {
   processPayment(input: ProcessPaymentInput): Promise<ProcessPaymentResult>;
   getPaymentStatus(paymentId: string): Promise<PaymentStatusResult>;
+  /** Re-busca os dados de um pagamento já criado (QR do Pix, link do boleto) — pra reexibir na página do pedido. */
+  getPaymentDetails(paymentId: string): Promise<ProcessPaymentResult>;
 }

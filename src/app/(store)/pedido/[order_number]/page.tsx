@@ -4,6 +4,8 @@ import { StatusPill } from "@/components/store/status-pill";
 import { storeCard } from "@/components/store/ui-styles";
 import { getOrderByNumber } from "@/lib/orders";
 import { formatBRL } from "@/lib/format";
+import { getPaymentProvider } from "@/lib/payments";
+import { PixInstructions, BoletoInstructions } from "@/components/checkout/payment-instructions";
 
 export const metadata: Metadata = {
   title: "Confirmação do pedido",
@@ -27,11 +29,28 @@ const STATUS_TONE: Record<string, "warn" | "ok" | "info" | "wine" | "critical"> 
   canceled: "critical",
 };
 
+async function getPendingPaymentInstructions(order: { status: string; payment_id: string | null }) {
+  if (order.status !== "pending" || !order.payment_id) return null;
+
+  try {
+    const details = await getPaymentProvider().getPaymentDetails(order.payment_id);
+    if (details.status !== "pending") return null;
+    if (details.qrCode) return { type: "pix" as const, qrCode: details.qrCode, qrCodeBase64: details.qrCodeBase64 };
+    if (details.ticketUrl) return { type: "boleto" as const, ticketUrl: details.ticketUrl };
+    return null;
+  } catch {
+    // Mercado Pago fora do ar ou pagamento não encontrado — a página continua funcionando sem o QR/link.
+    return null;
+  }
+}
+
 export default async function PedidoPage({ params }: { params: Promise<{ order_number: string }> }) {
   const { order_number: orderNumber } = await params;
   const order = await getOrderByNumber(orderNumber);
 
   if (!order) notFound();
+
+  const paymentInstructions = await getPendingPaymentInstructions(order);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
@@ -44,6 +63,19 @@ export default async function PedidoPage({ params }: { params: Promise<{ order_n
         <p className="mt-2 text-sm text-ink/60">
           Assim que o Mercado Pago confirmar o pagamento (PIX é quase instantâneo; boleto pode levar até 3 dias úteis), o status muda automaticamente.
         </p>
+      ) : null}
+
+      {paymentInstructions ? (
+        <div className={`${storeCard} mt-4 flex flex-col items-center gap-4 py-6 text-center`}>
+          <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-ink">
+            {paymentInstructions.type === "pix" ? "Pague com Pix pra concluir" : "Boleto gerado"}
+          </h2>
+          {paymentInstructions.type === "pix" ? (
+            <PixInstructions qrCode={paymentInstructions.qrCode} qrCodeBase64={paymentInstructions.qrCodeBase64} />
+          ) : (
+            <BoletoInstructions ticketUrl={paymentInstructions.ticketUrl} />
+          )}
+        </div>
       ) : null}
 
       <div className="mt-6 flex flex-col divide-y divide-ink/8 overflow-hidden rounded-2xl border border-ink/8 bg-white shadow-[var(--shadow-brand)]">

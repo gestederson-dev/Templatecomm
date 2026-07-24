@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cartTotalPrice, useCartStore } from "@/stores/cart";
 import { formatBRL } from "@/lib/format";
 import { btnOutline, btnWine } from "@/components/store/button-styles";
@@ -10,6 +11,7 @@ import type { Address } from "@/lib/types";
 import type { ShippingOption } from "@/lib/shipping";
 import { createOrderAction, processPaymentAction, quoteShippingAction, type ProcessPaymentState } from "@/app/checkout/actions";
 import { PaymentBrick } from "./payment-brick";
+import { PixInstructions, BoletoInstructions } from "./payment-instructions";
 
 type OrderCreated = { orderId: string; orderNumber: string; total: number; payerEmail: string };
 type PaymentSuccess = Extract<ProcessPaymentState, { status: string }>;
@@ -286,13 +288,24 @@ export function CheckoutForm({ addresses }: { addresses: Address[] }) {
 }
 
 function PaymentResultPanel({ result, orderNumber, onRetry }: { result: PaymentSuccess; orderNumber: string; onRetry: () => void }) {
+  const router = useRouter();
+  const orderHref = `/pedido/${orderNumber}`;
+
+  // Aprovado não tem mais nada acionável nessa tela — manda direto pro status do pedido.
+  useEffect(() => {
+    if (result.status === "approved") {
+      const timeout = setTimeout(() => router.push(orderHref), 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [result.status, orderHref, router]);
+
   if (result.status === "approved") {
     return (
       <div className={`${storeCard} flex flex-col items-center gap-3 py-10 text-center`}>
         <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-positive">Pagamento aprovado!</h2>
         <p className="text-sm text-ink/70">Pedido #{orderNumber} confirmado. Você vai receber um e-mail com os detalhes.</p>
-        <Link href="/conta/pedidos" className={`${btnWine} mt-2 px-6 py-2.5`}>
-          Ver meus pedidos
+        <Link href={orderHref} className={`${btnWine} mt-2 px-6 py-2.5`}>
+          Ver status do pedido
         </Link>
       </div>
     );
@@ -303,14 +316,9 @@ function PaymentResultPanel({ result, orderNumber, onRetry }: { result: PaymentS
       <div className={`${storeCard} flex flex-col items-center gap-4 py-8 text-center`}>
         <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-ink">Pague com Pix pra concluir</h2>
         <p className="text-sm text-ink/70">Pedido #{orderNumber} — escaneie o QR code ou copie o código abaixo no app do seu banco.</p>
-        {result.qrCodeBase64 ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={`data:image/png;base64,${result.qrCodeBase64}`} alt="QR code Pix" className="h-56 w-56 rounded-xl border border-ink/12" />
-        ) : null}
-        <textarea readOnly value={result.qrCode} className="w-full resize-none rounded-xl border border-ink/12 bg-white p-3 text-xs text-ink/70" rows={3} onFocus={(e) => e.currentTarget.select()} />
-        <p className="text-xs text-ink/50">Assim que o Pix cair, seu pedido é confirmado automaticamente.</p>
-        <Link href="/conta/pedidos" className={`${btnOutline} mt-1 px-6 py-2.5`}>
-          Ver meus pedidos
+        <PixInstructions qrCode={result.qrCode} qrCodeBase64={result.qrCodeBase64} />
+        <Link href={orderHref} className={`${btnOutline} mt-1 px-6 py-2.5`}>
+          Ver status do pedido
         </Link>
       </div>
     );
@@ -320,12 +328,10 @@ function PaymentResultPanel({ result, orderNumber, onRetry }: { result: PaymentS
     return (
       <div className={`${storeCard} flex flex-col items-center gap-4 py-8 text-center`}>
         <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-ink">Boleto gerado</h2>
-        <p className="text-sm text-ink/70">Pedido #{orderNumber} — imprima ou visualize o boleto abaixo. A compensação pode levar até 3 dias úteis.</p>
-        <a href={result.ticketUrl} target="_blank" rel="noreferrer" className={`${btnWine} px-6 py-2.5`}>
-          Ver boleto
-        </a>
-        <Link href="/conta/pedidos" className={`${btnOutline} mt-1 px-6 py-2.5`}>
-          Ver meus pedidos
+        <p className="text-sm text-ink/70">Pedido #{orderNumber} — imprima ou visualize o boleto abaixo.</p>
+        <BoletoInstructions ticketUrl={result.ticketUrl} />
+        <Link href={orderHref} className={`${btnOutline} mt-1 px-6 py-2.5`}>
+          Ver status do pedido
         </Link>
       </div>
     );
@@ -340,8 +346,8 @@ function PaymentResultPanel({ result, orderNumber, onRetry }: { result: PaymentS
           <button type="button" className={`${btnWine} px-6 py-2.5`} onClick={onRetry}>
             Tentar novamente
           </button>
-          <Link href="/conta/pedidos" className={`${btnOutline} px-6 py-2.5`}>
-            Ver meus pedidos
+          <Link href={orderHref} className={`${btnOutline} px-6 py-2.5`}>
+            Ver status do pedido
           </Link>
         </div>
       </div>
@@ -352,8 +358,8 @@ function PaymentResultPanel({ result, orderNumber, onRetry }: { result: PaymentS
     <div className={`${storeCard} flex flex-col items-center gap-3 py-10 text-center`}>
       <h2 className="font-[family-name:var(--font-display)] text-xl font-semibold text-ink">Pagamento em processamento</h2>
       <p className="text-sm text-ink/70">Pedido #{orderNumber} — assim que confirmarmos o pagamento, você recebe um e-mail.</p>
-      <Link href="/conta/pedidos" className={`${btnWine} mt-2 px-6 py-2.5`}>
-        Ver meus pedidos
+      <Link href={orderHref} className={`${btnWine} mt-2 px-6 py-2.5`}>
+        Ver status do pedido
       </Link>
     </div>
   );

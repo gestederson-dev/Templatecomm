@@ -4,6 +4,8 @@ export type PaymentStatusResult = {
   status: PaymentStatus;
   /** orderId que veio de volta na notificação — usado pra encontrar o pedido. */
   externalReference: string | null;
+  /** Categoria do meio de pagamento (credit_card, bank_transfer/pix, ticket/boleto, ...). */
+  paymentTypeId: string;
 };
 
 export type ProcessPaymentInput = {

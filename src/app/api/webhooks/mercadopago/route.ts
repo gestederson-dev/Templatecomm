@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPaymentProvider, type PaymentStatus } from "@/lib/payments";
+import { paymentTypeLabel } from "@/lib/payments/labels";
 import { getUserEmail } from "@/lib/email/get-user-email";
 import { orderConfirmedEmail } from "@/lib/email/templates";
 import { sendEmail } from "@/lib/email/send";
@@ -65,12 +66,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "assinatura inválida" }, { status: 401 });
   }
 
-  const { status, externalReference } = await getPaymentProvider().getPaymentStatus(dataId);
+  const { status, externalReference, paymentTypeId } = await getPaymentProvider().getPaymentStatus(dataId);
   if (!externalReference) {
     return NextResponse.json({ received: true });
   }
 
   const orderStatus = STATUS_TO_ORDER_STATUS[status];
+  const paymentMethod = paymentTypeLabel(paymentTypeId);
   const supabase = createAdminClient();
 
   const { data: order } = await supabase
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
     .update({
       payment_id: dataId,
       payment_status: status,
+      ...(paymentMethod ? { payment_method: paymentMethod } : {}),
       ...(orderStatus ? { status: orderStatus } : {}),
     })
     .eq("id", externalReference)

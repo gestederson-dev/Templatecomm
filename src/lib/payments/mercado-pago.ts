@@ -74,6 +74,7 @@ export const mercadoPagoProvider: PaymentProvider = {
     return {
       status: STATUS_MAP[result.status ?? ""] ?? "unknown",
       externalReference: result.external_reference ?? null,
+      paymentTypeId: result.payment_type_id ?? "",
     };
   },
 

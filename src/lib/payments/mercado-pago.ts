@@ -32,18 +32,29 @@ const STATUS_MAP: Record<string, PaymentStatus> = {
 export const mercadoPagoProvider: PaymentProvider = {
   async processPayment(input: ProcessPaymentInput): Promise<ProcessPaymentResult> {
     const payment = new Payment(client());
+    const paymentMethodId = (input.formData as { payment_method_id?: string }).payment_method_id;
 
-    const result = await payment.create({
-      body: {
-        ...input.formData,
-        transaction_amount: input.amount,
-        description: `Pedido ${input.orderId}`,
-        external_reference: input.orderId,
-        notification_url: `${siteUrl()}/api/webhooks/mercadopago`,
-      },
-    });
+    let result;
+    try {
+      result = await payment.create({
+        body: {
+          ...input.formData,
+          transaction_amount: input.amount,
+          description: `Pedido ${input.orderId}`,
+          external_reference: input.orderId,
+          notification_url: `${siteUrl()}/api/webhooks/mercadopago`,
+        },
+      });
+    } catch (e) {
+      const details = e && typeof e === "object" && "cause" in e ? JSON.stringify((e as { cause: unknown }).cause) : undefined;
+      console.error(`[mercadopago] processPayment falhou (orderId=${input.orderId}, payment_method_id=${paymentMethodId}):`, e instanceof Error ? e.message : e, details);
+      throw e;
+    }
 
     const transactionData = result.point_of_interaction?.transaction_data;
+    console.log(
+      `[mercadopago] processPayment ok (orderId=${input.orderId}, payment_method_id=${paymentMethodId}): status=${result.status}, paymentId=${result.id}, temQrCode=${Boolean(transactionData?.qr_code)}, temTicketUrl=${Boolean(result.transaction_details?.external_resource_url)}`,
+    );
 
     return {
       status: STATUS_MAP[result.status ?? ""] ?? "unknown",

@@ -1,6 +1,6 @@
 import "server-only";
-import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
-import type { CreatePaymentPreferenceInput, PaymentPreference, PaymentProvider, PaymentStatus, PaymentStatusResult } from "./types";
+import { MercadoPagoConfig, Payment } from "mercadopago";
+import type { PaymentProvider, PaymentStatus, PaymentStatusResult, ProcessPaymentInput, ProcessPaymentResult } from "./types";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -28,42 +28,31 @@ const STATUS_MAP: Record<string, PaymentStatus> = {
   charged_back: "refunded",
 };
 
-/** Checkout Pro: gera preferência e redireciona o cliente pro checkout hospedado do MP (PIX/boleto/cartão nativos). */
+/** Checkout embutido (Payment Brick): o cliente nunca sai do site — cartão, Pix e boleto processados direto pela API de Pagamentos. */
 export const mercadoPagoProvider: PaymentProvider = {
-  async createPreference(input: CreatePaymentPreferenceInput): Promise<PaymentPreference> {
-    const preference = new Preference(client());
-    const base = siteUrl();
+  async processPayment(input: ProcessPaymentInput): Promise<ProcessPaymentResult> {
+    const payment = new Payment(client());
 
-    const result = await preference.create({
+    const result = await payment.create({
       body: {
-        items: input.items.map((item) => ({
-          id: input.orderId,
-          title: item.title,
-          quantity: item.quantity,
-          unit_price: item.unitPrice,
-          currency_id: "BRL",
-        })),
-        shipments: {
-          cost: input.shippingCost,
-          mode: "not_specified",
-        },
-        payer: { email: input.payerEmail },
+        ...input.formData,
+        transaction_amount: input.amount,
+        description: `Pedido ${input.orderId}`,
         external_reference: input.orderId,
-        back_urls: {
-          success: `${base}/pedido/${input.orderNumber}`,
-          pending: `${base}/pedido/${input.orderNumber}`,
-          failure: `${base}/checkout?erro=pagamento`,
-        },
-        auto_return: "approved",
-        notification_url: `${base}/api/webhooks/mercadopago`,
+        notification_url: `${siteUrl()}/api/webhooks/mercadopago`,
       },
     });
 
-    if (!result.id || !result.init_point) {
-      throw new Error("Mercado Pago não retornou preferência válida.");
-    }
+    const transactionData = result.point_of_interaction?.transaction_data;
 
-    return { preferenceId: result.id, checkoutUrl: result.init_point };
+    return {
+      status: STATUS_MAP[result.status ?? ""] ?? "unknown",
+      paymentId: String(result.id ?? ""),
+      paymentTypeId: result.payment_type_id ?? "",
+      qrCode: transactionData?.qr_code ?? undefined,
+      qrCodeBase64: transactionData?.qr_code_base64 ?? undefined,
+      ticketUrl: result.transaction_details?.external_resource_url ?? undefined,
+    };
   },
 
   async getPaymentStatus(paymentId: string): Promise<PaymentStatusResult> {

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getShippingProvider, type ShippingOption } from "@/lib/shipping";
 import { getPaymentProvider } from "@/lib/payments";
+import type { PaymentStatus } from "@/lib/payments";
 
 export type ShippingQuoteState = { options: ShippingOption[] } | { error: string } | undefined;
 
@@ -41,8 +42,9 @@ export type CreateOrderInput = {
   items: { productId: string; quantity: number; customization?: Record<string, string> | null }[];
 };
 
-export type CreateOrderState = { checkoutUrl: string } | { error: string };
+export type CreateOrderState = { orderId: string; orderNumber: string; total: number; payerEmail: string } | { error: string };
 
+/** Só cria o pedido (status pending) — o pagamento em si é processado depois via processPaymentAction, pelo Payment Brick embutido na página. */
 export async function createOrderAction(input: CreateOrderInput): Promise<CreateOrderState> {
   if (input.items.length === 0) return { error: "Carrinho vazio." };
 
@@ -114,17 +116,39 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
   const { error: itemsError } = await supabase.from("order_items").insert(orderItemsInput.map((item) => ({ ...item, order_id: order.id })));
   if (itemsError) return { error: itemsError.message };
 
-  try {
-    const preference = await getPaymentProvider().createPreference({
-      orderId: order.id,
-      orderNumber: order.order_number,
-      shippingCost: input.shippingCost,
-      payerEmail: user.email,
-      items: orderItemsInput.map((item) => ({ title: item.product_name, quantity: item.quantity, unitPrice: item.unit_price })),
-    });
+  return { orderId: order.id, orderNumber: order.order_number, total, payerEmail: user.email };
+}
 
-    return { checkoutUrl: preference.checkoutUrl };
+export type ProcessPaymentState =
+  | { status: PaymentStatus; paymentId: string; paymentTypeId: string; qrCode?: string; qrCodeBase64?: string; ticketUrl?: string }
+  | { error: string };
+
+/**
+ * Processa o pagamento vindo do Payment Brick e devolve o resultado pra tela
+ * exibir na hora (aprovado / QR do Pix / boleto / recusado). O pedido em si
+ * só é marcado como pago pelo webhook — que roda com service_role e é a
+ * única fonte de verdade (CLAUDE.md regra 5) — por isso nenhuma coluna de
+ * `orders` é escrita aqui.
+ */
+export async function processPaymentAction(orderId: string, formData: Record<string, unknown>): Promise<ProcessPaymentState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || !user.email) return { error: "Não autenticado." };
+
+  const { data: order, error: orderError } = await supabase.from("orders").select("id, total, profile_id, status").eq("id", orderId).maybeSingle();
+  if (orderError || !order || order.profile_id !== user.id) return { error: "Pedido não encontrado." };
+  if (order.status !== "pending") return { error: "Este pedido já foi processado." };
+
+  try {
+    return await getPaymentProvider().processPayment({
+      orderId,
+      amount: order.total,
+      payerEmail: user.email,
+      formData,
+    });
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Erro ao criar pagamento." };
+    return { error: e instanceof Error ? e.message : "Erro ao processar pagamento." };
   }
 }

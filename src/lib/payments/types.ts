@@ -1,23 +1,3 @@
-export type PaymentPreferenceItem = {
-  title: string;
-  quantity: number;
-  unitPrice: number;
-};
-
-export type CreatePaymentPreferenceInput = {
-  orderId: string;
-  orderNumber: string;
-  items: PaymentPreferenceItem[];
-  shippingCost: number;
-  payerEmail: string;
-};
-
-export type PaymentPreference = {
-  preferenceId: string;
-  /** URL do checkout hospedado pelo provedor — para onde o cliente é redirecionado pra pagar. */
-  checkoutUrl: string;
-};
-
 export type PaymentStatus = "pending" | "approved" | "rejected" | "refunded" | "cancelled" | "unknown";
 
 export type PaymentStatusResult = {
@@ -26,11 +6,31 @@ export type PaymentStatusResult = {
   externalReference: string | null;
 };
 
+export type ProcessPaymentInput = {
+  orderId: string;
+  amount: number;
+  payerEmail: string;
+  /** Dados que o Payment Brick devolve em onSubmit — já no formato que a API de pagamentos espera. */
+  formData: Record<string, unknown>;
+};
+
+export type ProcessPaymentResult = {
+  status: PaymentStatus;
+  paymentId: string;
+  paymentTypeId: string;
+  /** Pix: código copia-e-cola. */
+  qrCode?: string;
+  /** Pix: QR code em base64, pronto pra <img src="data:image/png;base64,...">. */
+  qrCodeBase64?: string;
+  /** Boleto: URL pra visualizar/imprimir. */
+  ticketUrl?: string;
+};
+
 /**
  * Interface genérica de pagamento (CLAUDE.md regra 4: isolar atrás de
  * interface pra trocar de provedor sem reescrever o checkout).
  */
 export interface PaymentProvider {
-  createPreference(input: CreatePaymentPreferenceInput): Promise<PaymentPreference>;
+  processPayment(input: ProcessPaymentInput): Promise<ProcessPaymentResult>;
   getPaymentStatus(paymentId: string): Promise<PaymentStatusResult>;
 }

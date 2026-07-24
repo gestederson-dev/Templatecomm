@@ -1,3 +1,5 @@
+"use client";
+
 import { btnWine } from "@/components/store/button-styles";
 
 export function PixInstructions({ qrCode, qrCodeBase64 }: { qrCode: string; qrCodeBase64?: string }) {

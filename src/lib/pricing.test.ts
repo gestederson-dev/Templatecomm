@@ -37,6 +37,7 @@ const settings: PricingSettings = {
   minimumMarginPct: 15,
   meiAnnualCeiling: 81000,
   simulatedSimplesRatePct: null,
+  packagingExtras: [],
 };
 
 const productCost: ProductCost = {
@@ -67,6 +68,22 @@ describe("calcUnitCost", () => {
     const poucaQtd = calcUnitCost({ productCost: { ...productCost, setupMinutes: 60 }, settings, quantityInOrder: 1 });
     const muitaQtd = calcUnitCost({ productCost: { ...productCost, setupMinutes: 60 }, settings, quantityInOrder: 100 });
     expect(muitaQtd.setupPerUnit).toBeLessThan(poucaQtd.setupPerUnit);
+  });
+
+  it("extra de embalagem por unidade (cartão) soma igual em qualquer quantidade", () => {
+    const comExtras: PricingSettings = { ...settings, packagingExtras: [{ label: "Cartão", amount: 0.5, per: "unit" }] };
+    const qty1 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 1 });
+    const qty10 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 10 });
+    expect(qty1.packagingExtras).toBeCloseTo(0.5, 2);
+    expect(qty10.packagingExtras).toBeCloseTo(0.5, 2);
+  });
+
+  it("extra de embalagem por pedido (lembrancinha) dilui com a quantidade", () => {
+    const comExtras: PricingSettings = { ...settings, packagingExtras: [{ label: "Lembrancinha", amount: 5, per: "order" }] };
+    const qty1 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 1 });
+    const qty10 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 10 });
+    expect(qty1.packagingExtras).toBeCloseTo(5, 2);
+    expect(qty10.packagingExtras).toBeCloseTo(0.5, 2);
   });
 });
 

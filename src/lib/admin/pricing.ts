@@ -26,6 +26,7 @@ type PricingSettingsRow = {
   minimum_margin_pct: number;
   mei_annual_ceiling: number;
   simulated_simples_rate_pct: number | null;
+  packaging_extras: { label: string; amount: number; per: "unit" | "order" }[];
 };
 
 type ProductCostRow = {
@@ -67,6 +68,7 @@ export function rowToPricingSettings(row: PricingSettingsRow): PricingSettings {
     minimumMarginPct: row.minimum_margin_pct,
     meiAnnualCeiling: row.mei_annual_ceiling,
     simulatedSimplesRatePct: row.simulated_simples_rate_pct,
+    packagingExtras: row.packaging_extras ?? [],
   };
 }
 

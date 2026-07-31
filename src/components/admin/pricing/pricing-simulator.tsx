@@ -118,6 +118,7 @@ export function PricingSimulator({ products, settings, annualRevenueSoFar }: { p
           ["Mão de obra", unitCost.labor],
           ["Máquina", unitCost.machine],
           ["Embalagem (unidade)", unitCost.packagingUnit],
+          ["Cartão/doce/lembrancinha", unitCost.packagingExtras],
           ["Setup diluído no pedido", unitCost.setupPerUnit],
           ["Ajuste de refugo", unitCost.defectAdjustment],
           ["Custo fixo rateado", unitCost.fixedAllocated],

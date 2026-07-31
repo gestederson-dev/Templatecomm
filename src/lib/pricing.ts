@@ -42,6 +42,8 @@ export type PricingSettings = {
   meiAnnualCeiling: number;
   /** alíquota do Simples Nacional simulada pro cenário "e se eu desenquadrar do MEI" — informativo, não entra nas fórmulas do módulo */
   simulatedSimplesRatePct: number | null;
+  /** cartão, doce, lembrancinha... itens padrão que acompanham a entrega, configurados uma vez pra todos os produtos. */
+  packagingExtras: { label: string; amount: number; per: "unit" | "order" }[];
 };
 
 export type ProductCost = {
@@ -62,6 +64,7 @@ export type UnitCostBreakdown = {
   labor: number;
   machine: number;
   packagingUnit: number;
+  packagingExtras: number;
   setupPerUnit: number;
   defectAdjustment: number;
   fixedAllocated: number;
@@ -108,10 +111,14 @@ export function calcUnitCost(params: { productCost: ProductCost; settings: Prici
   const machine = round2((productCost.machineMinutes / 60) * productCost.machineHourlyCost * cf);
   const packagingUnit = round2(productCost.packagingUnitCost);
 
+  const extrasPerUnit = settings.packagingExtras.filter((item) => item.per === "unit").reduce((sum, item) => sum + item.amount, 0);
+  const extrasPerOrder = settings.packagingExtras.filter((item) => item.per === "order").reduce((sum, item) => sum + item.amount, 0);
+  const packagingExtras = round2(extrasPerUnit + extrasPerOrder / qty);
+
   const setupTotal = (productCost.setupMinutes / 60) * settings.hourlyRate + productCost.packagingOrderCost;
   const setupPerUnit = round2(setupTotal / qty);
 
-  const subtotal = blank + customization + labor + machine + packagingUnit + setupPerUnit;
+  const subtotal = blank + customization + labor + machine + packagingUnit + packagingExtras + setupPerUnit;
 
   const defectRate = Math.min(Math.max(settings.defectRatePct, 0), 99.99);
   const afterDefect = round2(subtotal / (1 - defectRate / 100));
@@ -120,9 +127,9 @@ export function calcUnitCost(params: { productCost: ProductCost; settings: Prici
   const totalFixedMonthly = sumFixedCosts(settings.fixedCosts) + settings.dasMonthly;
   const fixedAllocated = round2(calcFixedAllocation(totalFixedMonthly, settings, params.referencePrice));
 
-  const total = round2(blank + customization + labor + machine + packagingUnit + setupPerUnit + defectAdjustment + fixedAllocated);
+  const total = round2(blank + customization + labor + machine + packagingUnit + packagingExtras + setupPerUnit + defectAdjustment + fixedAllocated);
 
-  return { blank, customization, labor, machine, packagingUnit, setupPerUnit, defectAdjustment, fixedAllocated, total };
+  return { blank, customization, labor, machine, packagingUnit, packagingExtras, setupPerUnit, defectAdjustment, fixedAllocated, total };
 }
 
 /** Taxa (percentual + fixa) do Mercado Pago pro cenário de pagamento escolhido. */

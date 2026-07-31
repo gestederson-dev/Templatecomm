@@ -27,6 +27,13 @@ export async function savePricingSettingsAction(_prevState: ActionState, formDat
     return { error: "Lista de custos fixos inválida." };
   }
 
+  let packagingExtras: { label: string; amount: number; per: "unit" | "order" }[] = [];
+  try {
+    packagingExtras = JSON.parse(String(formData.get("packagingExtrasJson") ?? "[]"));
+  } catch {
+    return { error: "Lista de itens de embalagem inválida." };
+  }
+
   const installmentFees: Record<string, number> = {};
   for (let n = 2; n <= 12; n++) {
     const value = num(formData, `installment_${n}`, NaN);
@@ -60,6 +67,7 @@ export async function savePricingSettingsAction(_prevState: ActionState, formDat
     minimum_margin_pct: num(formData, "minimumMarginPct", 15),
     mei_annual_ceiling: num(formData, "meiAnnualCeiling", 81000),
     simulated_simples_rate_pct: numOrNull(formData, "simulatedSimplesRatePct"),
+    packaging_extras: packagingExtras.filter((item) => item.label.trim().length > 0),
   };
 
   const supabase = await createClient();

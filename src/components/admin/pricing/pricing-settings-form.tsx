@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { FixedCostsEditor } from "@/components/admin/pricing/fixed-costs-editor";
+import { PackagingExtrasEditor } from "@/components/admin/pricing/packaging-extras-editor";
 import { adminBtnWine, adminCard, adminInput, adminLabel } from "@/components/admin/ui-styles";
 import { savePricingSettingsAction, type ActionState } from "@/app/admin/precificacao/actions";
 import { deriveHourlyRate, type PricingSettings } from "@/lib/pricing";
@@ -52,6 +53,14 @@ export function PricingSettingsForm({ settings }: { settings: PricingSettings })
             <p className="mt-1 text-[11.5px] text-ink/52">Usado só nesse modo, pra saber a fatia do fixo que cada preço deve carregar.</p>
           </div>
         ) : null}
+      </section>
+
+      <section className={`${adminCard} flex flex-col gap-4`}>
+        <div>
+          <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Embalagem da entrega</h2>
+          <p className="mt-0.5 text-[11.5px] text-ink/52">Cartão, doce, lembrancinha, adesivo... itens que acompanham a entrega de (quase) todo produto. Configure uma vez aqui em vez de repetir em cada produto.</p>
+        </div>
+        <PackagingExtrasEditor initial={settings.packagingExtras} />
       </section>
 
       <section className={`${adminCard} flex flex-col gap-4`}>

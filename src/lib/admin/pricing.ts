@@ -26,7 +26,7 @@ type PricingSettingsRow = {
   minimum_margin_pct: number;
   mei_annual_ceiling: number;
   simulated_simples_rate_pct: number | null;
-  packaging_extras: { label: string; amount: number; per: "unit" | "order" }[];
+  packaging_extras: { id: string; label: string; amount: number; per: "unit" | "order" }[];
 };
 
 type ProductCostRow = {
@@ -42,6 +42,7 @@ type ProductCostRow = {
   packaging_order_cost: number;
   complexity_factor: number;
   weight_grams_packed: number | null;
+  packaging_extra_ids: string[];
 };
 
 export function rowToPricingSettings(row: PricingSettingsRow): PricingSettings {
@@ -82,6 +83,7 @@ const EMPTY_PRODUCT_COST: ProductCost = {
   packagingUnitCost: 0,
   packagingOrderCost: 0,
   complexityFactor: 1,
+  packagingExtraIds: [],
 };
 
 export function rowToProductCost(row: ProductCostRow | null): ProductCost {
@@ -96,6 +98,7 @@ export function rowToProductCost(row: ProductCostRow | null): ProductCost {
     packagingUnitCost: row.packaging_unit_cost,
     packagingOrderCost: row.packaging_order_cost,
     complexityFactor: row.complexity_factor || 1,
+    packagingExtraIds: row.packaging_extra_ids ?? [],
   };
 }
 

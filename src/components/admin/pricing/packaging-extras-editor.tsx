@@ -3,17 +3,21 @@
 import { useState } from "react";
 import { adminInput } from "@/components/admin/ui-styles";
 
-type PackagingExtra = { label: string; amount: number; per: "unit" | "order" };
+type PackagingExtra = { id: string; label: string; amount: number; per: "unit" | "order" };
+
+function newId(): string {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `extra-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 export function PackagingExtrasEditor({ initial }: { initial: PackagingExtra[] }) {
-  const [items, setItems] = useState<PackagingExtra[]>(initial.length > 0 ? initial : [{ label: "", amount: 0, per: "unit" }]);
+  const [items, setItems] = useState<PackagingExtra[]>(initial.length > 0 ? initial : [{ id: newId(), label: "", amount: 0, per: "unit" }]);
 
   function updateItem(index: number, patch: Partial<PackagingExtra>) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
   }
 
   function addItem() {
-    setItems((prev) => [...prev, { label: "", amount: 0, per: "unit" }]);
+    setItems((prev) => [...prev, { id: newId(), label: "", amount: 0, per: "unit" }]);
   }
 
   function removeItem(index: number) {
@@ -30,7 +34,7 @@ export function PackagingExtrasEditor({ initial }: { initial: PackagingExtra[] }
         <span />
       </div>
       {items.map((item, index) => (
-        <div key={index} className="grid grid-cols-[1fr_110px_130px_32px] items-center gap-2">
+        <div key={item.id} className="grid grid-cols-[1fr_110px_130px_32px] items-center gap-2">
           <input value={item.label} onChange={(e) => updateItem(index, { label: e.target.value })} placeholder="Ex: Cartão de agradecimento" className={adminInput} />
           <input type="number" step="0.01" min="0" value={item.amount} onChange={(e) => updateItem(index, { amount: Number(e.target.value) || 0 })} className={adminInput} />
           <select value={item.per} onChange={(e) => updateItem(index, { per: e.target.value as PackagingExtra["per"] })} className={adminInput}>

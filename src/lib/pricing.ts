@@ -42,9 +42,15 @@ export type PricingSettings = {
   meiAnnualCeiling: number;
   /** alíquota do Simples Nacional simulada pro cenário "e se eu desenquadrar do MEI" — informativo, não entra nas fórmulas do módulo */
   simulatedSimplesRatePct: number | null;
-  /** cartão, doce, lembrancinha... itens padrão que acompanham a entrega, configurados uma vez pra todos os produtos. */
-  packagingExtras: { label: string; amount: number; per: "unit" | "order" }[];
+  /**
+   * Catálogo de itens de embalagem (cartão, doce, lembrancinha...) cadastrados
+   * uma vez só. Cada produto escolhe quais desses itens usa em `ProductCost.packagingExtraIds`
+   * — embalagem varia por produto (kit grande leva caixa diferente de uma caneta avulsa).
+   */
+  packagingExtras: PackagingExtra[];
 };
+
+export type PackagingExtra = { id: string; label: string; amount: number; per: "unit" | "order" };
 
 export type ProductCost = {
   blankCost: number;
@@ -56,6 +62,8 @@ export type ProductCost = {
   packagingUnitCost: number;
   packagingOrderCost: number;
   complexityFactor: number;
+  /** ids de PricingSettings.packagingExtras que esse produto usa. */
+  packagingExtraIds: string[];
 };
 
 export type UnitCostBreakdown = {
@@ -111,8 +119,9 @@ export function calcUnitCost(params: { productCost: ProductCost; settings: Prici
   const machine = round2((productCost.machineMinutes / 60) * productCost.machineHourlyCost * cf);
   const packagingUnit = round2(productCost.packagingUnitCost);
 
-  const extrasPerUnit = settings.packagingExtras.filter((item) => item.per === "unit").reduce((sum, item) => sum + item.amount, 0);
-  const extrasPerOrder = settings.packagingExtras.filter((item) => item.per === "order").reduce((sum, item) => sum + item.amount, 0);
+  const selectedExtras = settings.packagingExtras.filter((item) => productCost.packagingExtraIds.includes(item.id));
+  const extrasPerUnit = selectedExtras.filter((item) => item.per === "unit").reduce((sum, item) => sum + item.amount, 0);
+  const extrasPerOrder = selectedExtras.filter((item) => item.per === "order").reduce((sum, item) => sum + item.amount, 0);
   const packagingExtras = round2(extrasPerUnit + extrasPerOrder / qty);
 
   const setupTotal = (productCost.setupMinutes / 60) * settings.hourlyRate + productCost.packagingOrderCost;

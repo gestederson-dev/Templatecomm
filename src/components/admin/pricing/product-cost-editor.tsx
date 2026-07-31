@@ -36,13 +36,29 @@ export function ProductCostEditor({
   const [packagingUnitCost, setPackagingUnitCost] = useState(cost.packagingUnitCost);
   const [packagingOrderCost, setPackagingOrderCost] = useState(cost.packagingOrderCost);
   const [complexityFactor, setComplexityFactor] = useState(cost.complexityFactor || 1);
+  const [packagingExtraIds, setPackagingExtraIds] = useState<string[]>(cost.packagingExtraIds);
+
+  function toggleExtra(id: string) {
+    setPackagingExtraIds((prev) => (prev.includes(id) ? prev.filter((existing) => existing !== id) : [...prev, id]));
+  }
 
   const livePreview = useMemo(() => {
-    const liveCost: ProductCost = { blankCost, customizationInputCost, productionMinutes, setupMinutes, machineMinutes, machineHourlyCost, packagingUnitCost, packagingOrderCost, complexityFactor };
+    const liveCost: ProductCost = {
+      blankCost,
+      customizationInputCost,
+      productionMinutes,
+      setupMinutes,
+      machineMinutes,
+      machineHourlyCost,
+      packagingUnitCost,
+      packagingOrderCost,
+      complexityFactor,
+      packagingExtraIds,
+    };
     const breakdown = calcUnitCost({ productCost: liveCost, settings, quantityInOrder: 1 });
     const feePct = calcWeightedFeePct(settings);
     return { total: breakdown.total, floor: calcPriceFloor(breakdown.total, feePct) };
-  }, [blankCost, customizationInputCost, productionMinutes, setupMinutes, machineMinutes, machineHourlyCost, packagingUnitCost, packagingOrderCost, complexityFactor, settings]);
+  }, [blankCost, customizationInputCost, productionMinutes, setupMinutes, machineMinutes, machineHourlyCost, packagingUnitCost, packagingOrderCost, complexityFactor, packagingExtraIds, settings]);
 
   return (
     <form action={formAction} className={`${adminCard} flex flex-col gap-4`}>
@@ -94,6 +110,34 @@ export function ProductCostEditor({
           <label className={adminLabel}>Embalagem por pedido (R$)</label>
           <input name="packagingOrderCost" type="number" step="0.01" min="0" value={packagingOrderCost} onChange={(e) => setPackagingOrderCost(Number(e.target.value) || 0)} className={adminInput} />
         </div>
+      </div>
+
+      <div>
+        <label className={adminLabel}>Itens de embalagem que esse produto usa</label>
+        {settings.packagingExtras.length === 0 ? (
+          <p className="text-[12.5px] text-ink/52">
+            Nenhum item cadastrado ainda. Cadastre em{" "}
+            <a href="/admin/precificacao" className="font-semibold text-wine hover:underline">
+              Precificação → Configuração → Embalagem da entrega
+            </a>
+            .
+          </p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {settings.packagingExtras.map((extra) => {
+              const checked = packagingExtraIds.includes(extra.id);
+              return (
+                <label
+                  key={extra.id}
+                  className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-[12.5px] transition-colors ${checked ? "border-wine bg-wine-tint text-wine" : "border-line text-ink/70"}`}
+                >
+                  <input type="checkbox" name="packagingExtraIds" value={extra.id} checked={checked} onChange={() => toggleExtra(extra.id)} className="accent-wine" />
+                  {extra.label} ({formatBRL(extra.amount)}/{extra.per === "unit" ? "un." : "pedido"})
+                </label>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">

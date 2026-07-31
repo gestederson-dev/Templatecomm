@@ -50,12 +50,14 @@ const productCost: ProductCost = {
   packagingUnitCost: 3.5,
   packagingOrderCost: 0,
   complexityFactor: 1,
+  packagingExtraIds: [],
 };
 
 describe("calcUnitCost", () => {
   it("soma das linhas do breakdown bate com o total, ao centavo", () => {
     const result = calcUnitCost({ productCost, settings, quantityInOrder: 1 });
-    const sumOfParts = result.blank + result.customization + result.labor + result.machine + result.packagingUnit + result.setupPerUnit + result.defectAdjustment + result.fixedAllocated;
+    const sumOfParts =
+      result.blank + result.customization + result.labor + result.machine + result.packagingUnit + result.packagingExtras + result.setupPerUnit + result.defectAdjustment + result.fixedAllocated;
     expect(Math.round(sumOfParts * 100)).toBe(Math.round(result.total * 100));
   });
 
@@ -71,19 +73,27 @@ describe("calcUnitCost", () => {
   });
 
   it("extra de embalagem por unidade (cartão) soma igual em qualquer quantidade", () => {
-    const comExtras: PricingSettings = { ...settings, packagingExtras: [{ label: "Cartão", amount: 0.5, per: "unit" }] };
-    const qty1 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 1 });
-    const qty10 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 10 });
+    const comExtras: PricingSettings = { ...settings, packagingExtras: [{ id: "cartao", label: "Cartão", amount: 0.5, per: "unit" }] };
+    const productComExtra: ProductCost = { ...productCost, packagingExtraIds: ["cartao"] };
+    const qty1 = calcUnitCost({ productCost: productComExtra, settings: comExtras, quantityInOrder: 1 });
+    const qty10 = calcUnitCost({ productCost: productComExtra, settings: comExtras, quantityInOrder: 10 });
     expect(qty1.packagingExtras).toBeCloseTo(0.5, 2);
     expect(qty10.packagingExtras).toBeCloseTo(0.5, 2);
   });
 
   it("extra de embalagem por pedido (lembrancinha) dilui com a quantidade", () => {
-    const comExtras: PricingSettings = { ...settings, packagingExtras: [{ label: "Lembrancinha", amount: 5, per: "order" }] };
-    const qty1 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 1 });
-    const qty10 = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 10 });
+    const comExtras: PricingSettings = { ...settings, packagingExtras: [{ id: "lembrancinha", label: "Lembrancinha", amount: 5, per: "order" }] };
+    const productComExtra: ProductCost = { ...productCost, packagingExtraIds: ["lembrancinha"] };
+    const qty1 = calcUnitCost({ productCost: productComExtra, settings: comExtras, quantityInOrder: 1 });
+    const qty10 = calcUnitCost({ productCost: productComExtra, settings: comExtras, quantityInOrder: 10 });
     expect(qty1.packagingExtras).toBeCloseTo(5, 2);
     expect(qty10.packagingExtras).toBeCloseTo(0.5, 2);
+  });
+
+  it("produto que não seleciona nenhum extra não é afetado pelo catálogo global", () => {
+    const comExtras: PricingSettings = { ...settings, packagingExtras: [{ id: "cartao", label: "Cartão", amount: 0.5, per: "unit" }] };
+    const semSelecao = calcUnitCost({ productCost, settings: comExtras, quantityInOrder: 1 });
+    expect(semSelecao.packagingExtras).toBe(0);
   });
 });
 

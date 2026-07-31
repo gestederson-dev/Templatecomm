@@ -94,6 +94,7 @@ export async function saveProductCostAction(_prevState: ActionState, formData: F
     packaging_order_cost: num(formData, "packagingOrderCost", 0),
     complexity_factor: num(formData, "complexityFactor", 1) || 1,
     weight_grams_packed: numOrNull(formData, "weightGramsPacked"),
+    packaging_extra_ids: formData.getAll("packagingExtraIds").map(String),
   };
 
   const supabase = await createClient();

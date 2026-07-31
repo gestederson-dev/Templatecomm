@@ -9,6 +9,7 @@ const NAV: AdminNavItem[] = [
   { href: "/admin/orcamentos", label: "Orçamentos", icon: "orcamentos", group: "Vendas" },
   { href: "/admin/clientes", label: "Clientes", icon: "clientes", group: "Vendas" },
   { href: "/admin/cupons", label: "Cupons", icon: "cupons", group: "Vendas" },
+  { href: "/admin/precificacao", label: "Precificação", icon: "precificacao", group: "Vendas" },
   { href: "/admin/banners", label: "Banners", icon: "banners", group: "Sistema" },
   { href: "/admin/configuracoes", label: "Configurações", icon: "configuracoes", group: "Sistema" },
 ];

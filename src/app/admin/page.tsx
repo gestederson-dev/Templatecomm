@@ -6,8 +6,10 @@ import { StatusDonut } from "@/components/admin/dashboard/status-donut";
 import { TopProductsChart } from "@/components/admin/dashboard/top-products-chart";
 import { QuoteFunnel } from "@/components/admin/dashboard/quote-funnel";
 import { RecentOrdersTable } from "@/components/admin/dashboard/recent-orders-table";
+import { PricingAlertsCard } from "@/components/admin/dashboard/pricing-alerts-card";
 import { adminCard } from "@/components/admin/ui-styles";
 import { getDashboardMetrics, periodFromDays, toISODate } from "@/lib/admin/dashboard";
+import { getPricingAlerts } from "@/lib/admin/pricing";
 import { formatBRL } from "@/lib/format";
 
 type SearchParams = { period?: string; from?: string; to?: string };
@@ -26,7 +28,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     ({ from, to } = periodFromDays(days));
   }
 
-  const metrics = await getDashboardMetrics(from, to);
+  const [metrics, pricingAlerts] = await Promise.all([getDashboardMetrics(from, to), getPricingAlerts()]);
   const revenueDelta = metrics.previousRevenue > 0 ? ((metrics.revenue - metrics.previousRevenue) / metrics.previousRevenue) * 100 : null;
 
   return (
@@ -65,6 +67,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           <StatusDonut data={metrics.ordersByStatus} />
         </div>
       </div>
+
+      <PricingAlertsCard alerts={pricingAlerts.alerts} missingCostCount={pricingAlerts.missingCostCount} />
 
       <div className="grid gap-5 lg:grid-cols-[1fr_1.3fr]">
         <div className={adminCard}>

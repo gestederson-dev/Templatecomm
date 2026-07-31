@@ -5,8 +5,10 @@ import Link from "next/link";
 import { ProductImages } from "@/components/admin/product-images";
 import { ProductPriceTiers } from "@/components/admin/product-price-tiers";
 import { ProductCustomization } from "@/components/admin/product-customization";
+import { ProductCostEditor } from "@/components/admin/pricing/product-cost-editor";
 import { adminBtnAmber, adminBtnSoft, adminCard, adminInput, adminLabel } from "@/components/admin/ui-styles";
 import { saveProductAction, type ActionState } from "@/app/admin/produtos/actions";
+import type { PricingSettings, ProductCost } from "@/lib/pricing";
 import type { Category, ProductWithRelations } from "@/lib/types";
 
 const FORM_ID = "product-form";
@@ -32,7 +34,21 @@ function ToggleField({ name, defaultChecked, label, hint }: { name: string; defa
   );
 }
 
-export function ProductEditor({ product, categories }: { product?: ProductWithRelations; categories: Category[] }) {
+export function ProductEditor({
+  product,
+  categories,
+  productCost,
+  hasProductCost,
+  productCostWeightGramsPacked,
+  pricingSettings,
+}: {
+  product?: ProductWithRelations;
+  categories: Category[];
+  productCost?: ProductCost;
+  hasProductCost?: boolean;
+  productCostWeightGramsPacked?: number | null;
+  pricingSettings?: PricingSettings;
+}) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(saveProductAction, undefined);
   const isNew = !product;
 
@@ -116,6 +132,9 @@ export function ProductEditor({ product, categories }: { product?: ProductWithRe
               <ProductImages productId={product.id} images={product.images} />
               <ProductPriceTiers productId={product.id} tiers={product.price_tiers} />
               <ProductCustomization productId={product.id} options={product.customization_options} />
+              {productCost && pricingSettings ? (
+                <ProductCostEditor productId={product.id} cost={productCost} hasCost={hasProductCost ?? false} weightGramsPacked={productCostWeightGramsPacked ?? null} settings={pricingSettings} />
+              ) : null}
             </>
           ) : (
             <p className="rounded-2xl border border-dashed border-line p-6 text-center text-sm text-ink/52">

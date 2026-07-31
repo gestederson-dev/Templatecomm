@@ -51,6 +51,18 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
     </>
   ),
+  precificacao: (
+    <>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M8 7.5h8" />
+      <circle cx="8" cy="12" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="12" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="16" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="16" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="16" r="0.9" fill="currentColor" stroke="none" />
+    </>
+  ),
   configuracoes: (
     <>
       <circle cx="12" cy="12" r="3" />

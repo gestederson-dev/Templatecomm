@@ -71,7 +71,8 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
         <table className="w-full border-collapse text-[13.5px]">
           <thead>
             <tr className="bg-ink/[0.015] text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-ink/52">
-              <th className="px-4 py-3.5">Pedido</th>
+              <th className="px-4 py-3.5">Cliente</th>
+              <th className="px-4 py-3.5">Produto</th>
               <th className="px-4 py-3.5">Data</th>
               <th className="px-4 py-3.5">Origem</th>
               <th className="px-4 py-3.5">Total</th>
@@ -81,7 +82,7 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
           <tbody>
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-ink/52">
+                <td colSpan={6} className="px-4 py-10 text-center text-ink/52">
                   Nenhum pedido encontrado.
                 </td>
               </tr>
@@ -89,9 +90,16 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
             {orders.map((order) => (
               <tr key={order.id} className="border-t border-line">
                 <td className="px-4 py-3.5">
-                  <Link href={`/admin/pedidos/${order.id}`} className="font-semibold text-ink hover:text-wine">
-                    {order.order_number}
+                  <Link href={`/admin/pedidos/${order.id}`} className="block hover:text-wine">
+                    <span className="font-semibold text-ink">{order.customerName}</span>
+                    <span className="block text-[12px] text-ink/52">{order.order_number}</span>
                   </Link>
+                </td>
+                <td className="px-4 py-3.5 text-ink/70">
+                  {order.firstItemName || "—"}
+                  {order.extraItemCount > 0 ? (
+                    <span className="ml-1.5 rounded-full bg-wine-tint px-2 py-0.5 text-[11px] font-semibold text-wine">+{order.extraItemCount}</span>
+                  ) : null}
                 </td>
                 <td className="px-4 py-3.5 text-ink/62">{new Date(order.created_at).toLocaleDateString("pt-BR")}</td>
                 <td className="px-4 py-3.5 text-ink/62">{ORIGIN_LABEL[order.origin] ?? order.origin}</td>

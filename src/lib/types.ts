@@ -89,6 +89,8 @@ export type Quote = {
   quoted_total: number | null;
   valid_until: string | null;
   converted_order_id: string | null;
+  customer_name: string | null;
+  customer_phone: string | null;
   created_at: string;
   updated_at: string;
 };

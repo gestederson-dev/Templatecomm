@@ -41,11 +41,16 @@ export default async function AdminOrcamentosPage({ searchParams }: { searchPara
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Orçamentos</h1>
-        <p className="mt-0.5 text-[13px] text-ink/52">
-          {pendingCount} aguardando resposta · {inProgressCount} em andamento
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Orçamentos</h1>
+          <p className="mt-0.5 text-[13px] text-ink/52">
+            {pendingCount} aguardando resposta · {inProgressCount} em andamento
+          </p>
+        </div>
+        <Link href="/admin/orcamentos/novo" className="inline-flex items-center gap-2 rounded-[10px] bg-wine px-[18px] py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-px">
+          + Novo orçamento
+        </Link>
       </div>
 
       <div className="flex w-fit gap-1 rounded-[10px] border border-line bg-white p-1">
@@ -96,7 +101,7 @@ export default async function AdminOrcamentosPage({ searchParams }: { searchPara
                 </td>
                 <td className="px-4 py-3.5">
                   <Link href={`/admin/orcamentos/${quote.id}`} className="block">
-                    <span className="font-semibold">{quote.profile?.company_name || quote.profile?.full_name || "—"}</span>
+                    <span className="font-semibold">{quote.profile?.company_name || quote.profile?.full_name || quote.customer_name || "—"}</span>
                     <small className="block text-xs font-normal text-ink/52">
                       {quote.profile?.person_type === "pj" ? `CNPJ ${quote.profile.cnpj ?? "—"}` : "Pessoa física"}
                     </small>

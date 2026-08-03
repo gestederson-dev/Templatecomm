@@ -2,14 +2,29 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { createManualOrderAction, type ActionState } from "@/app/admin/pedidos/novo/actions";
+import { updateManualOrderAction } from "@/app/admin/pedidos/[id]/editar/actions";
 import { adminBtnSoft, adminBtnWine, adminCard, adminInput, adminLabel } from "@/components/admin/ui-styles";
 import { CustomizationFields } from "@/components/store/customization-fields";
 import { formatBRL } from "@/lib/format";
-import type { ProductCustomizationOption } from "@/lib/types";
+import type { OrderStatus, ProductCustomizationOption } from "@/lib/types";
 
 type Customer = { id: string; name: string; phone: string | null };
 type ProductOption = { id: string; name: string; sku: string | null; basePrice: number | null; customizationOptions: ProductCustomizationOption[] };
 type LineItem = { productId: string; productName: string; quantity: number; unitPrice: number; customization?: Record<string, string> | null };
+
+export type ExistingOrderForEdit = {
+  id: string;
+  profileId: string | null;
+  customerName: string | null;
+  customerPhone: string | null;
+  status: OrderStatus;
+  paymentMethod: string | null;
+  notes: string | null;
+  discount: number;
+  shippingCost: number;
+  shippingAddress: Record<string, string> | null;
+  items: LineItem[];
+};
 
 function lineKey(item: Pick<LineItem, "productId" | "customization">): string {
   if (!item.customization || Object.keys(item.customization).length === 0) return item.productId;
@@ -36,23 +51,24 @@ function initialsOf(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
 }
 
-export function ManualOrderForm({ customers, products }: { customers: Customer[]; products: ProductOption[] }) {
-  const [state, formAction, pending] = useActionState<ActionState, FormData>(createManualOrderAction, undefined);
+export function ManualOrderForm({ customers, products, order }: { customers: Customer[]; products: ProductOption[]; order?: ExistingOrderForEdit }) {
+  const isEditing = Boolean(order);
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(isEditing ? updateManualOrderAction : createManualOrderAction, undefined);
 
-  const [customerMode, setCustomerMode] = useState<"cadastrado" | "avulso">("cadastrado");
+  const [customerMode, setCustomerMode] = useState<"cadastrado" | "avulso">(order?.profileId ? "cadastrado" : order ? "avulso" : "cadastrado");
   const [customerSearch, setCustomerSearch] = useState("");
-  const [profileId, setProfileId] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  const [profileId, setProfileId] = useState(order?.profileId ?? "");
+  const [customerName, setCustomerName] = useState(order?.customerName ?? "");
+  const [customerPhone, setCustomerPhone] = useState(order?.customerPhone ?? "");
 
-  const [items, setItems] = useState<LineItem[]>([]);
+  const [items, setItems] = useState<LineItem[]>(order?.items ?? []);
   const [pickProductId, setPickProductId] = useState("");
   const [pendingCustomization, setPendingCustomization] = useState<Record<string, string>>({});
   const [customizationError, setCustomizationError] = useState<string | null>(null);
 
-  const [includeShipping, setIncludeShipping] = useState(false);
-  const [shippingCost, setShippingCost] = useState("0");
-  const [discount, setDiscount] = useState("0");
+  const [includeShipping, setIncludeShipping] = useState(Boolean(order?.shippingAddress));
+  const [shippingCost, setShippingCost] = useState(String(order?.shippingCost ?? 0));
+  const [discount, setDiscount] = useState(String(order?.discount ?? 0));
 
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
@@ -105,6 +121,7 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      {order ? <input type="hidden" name="orderId" value={order.id} /> : null}
       <input type="hidden" name="profileId" value={customerMode === "cadastrado" ? profileId : ""} />
       <input type="hidden" name="customerName" value={customerMode === "avulso" ? customerName : ""} />
       <input type="hidden" name="customerPhone" value={customerMode === "avulso" ? customerPhone : ""} />
@@ -282,7 +299,7 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={adminLabel}>CEP</label>
-              <input name="cep" className={adminInput} />
+              <input name="cep" defaultValue={order?.shippingAddress?.cep ?? ""} className={adminInput} />
             </div>
             <div>
               <label className={adminLabel}>Valor do frete (R$)</label>
@@ -290,27 +307,27 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
             </div>
             <div className="col-span-2">
               <label className={adminLabel}>Rua</label>
-              <input name="street" className={adminInput} />
+              <input name="street" defaultValue={order?.shippingAddress?.street ?? ""} className={adminInput} />
             </div>
             <div>
               <label className={adminLabel}>Número</label>
-              <input name="number" className={adminInput} />
+              <input name="number" defaultValue={order?.shippingAddress?.number ?? ""} className={adminInput} />
             </div>
             <div>
               <label className={adminLabel}>Complemento</label>
-              <input name="complement" className={adminInput} />
+              <input name="complement" defaultValue={order?.shippingAddress?.complement ?? ""} className={adminInput} />
             </div>
             <div>
               <label className={adminLabel}>Bairro</label>
-              <input name="district" className={adminInput} />
+              <input name="district" defaultValue={order?.shippingAddress?.district ?? ""} className={adminInput} />
             </div>
             <div>
               <label className={adminLabel}>Cidade</label>
-              <input name="city" className={adminInput} />
+              <input name="city" defaultValue={order?.shippingAddress?.city ?? ""} className={adminInput} />
             </div>
             <div>
               <label className={adminLabel}>Estado</label>
-              <input name="state" maxLength={2} className={adminInput} />
+              <input name="state" maxLength={2} defaultValue={order?.shippingAddress?.state ?? ""} className={adminInput} />
             </div>
           </div>
         ) : null}
@@ -319,7 +336,7 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
       <div className={`${adminCard} grid grid-cols-3 gap-3`}>
         <div>
           <label className={adminLabel}>Status</label>
-          <select name="status" defaultValue="paid" className={adminInput}>
+          <select name="status" defaultValue={order?.status ?? "paid"} className={adminInput}>
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
@@ -329,7 +346,7 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
         </div>
         <div>
           <label className={adminLabel}>Forma de pagamento</label>
-          <select name="paymentMethod" defaultValue="" className={adminInput}>
+          <select name="paymentMethod" defaultValue={order?.paymentMethod ?? ""} className={adminInput}>
             <option value="">Não informado</option>
             {PAYMENT_METHODS.map((m) => (
               <option key={m} value={m}>
@@ -344,7 +361,7 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
         </div>
         <div className="col-span-3">
           <label className={adminLabel}>Observações</label>
-          <textarea name="notes" rows={2} className={adminInput} placeholder="Ex: venda combinada via WhatsApp em 22/07" />
+          <textarea name="notes" rows={2} defaultValue={order?.notes ?? ""} className={adminInput} placeholder="Ex: venda combinada via WhatsApp em 22/07" />
         </div>
       </div>
 
@@ -370,7 +387,7 @@ export function ManualOrderForm({ customers, products }: { customers: Customer[]
       {state?.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
 
       <button type="submit" disabled={pending || items.length === 0} className={`${adminBtnWine} w-fit disabled:pointer-events-none disabled:opacity-50`}>
-        {pending ? "Criando..." : "Criar pedido"}
+        {pending ? "Salvando..." : isEditing ? "Salvar alterações" : "Criar pedido"}
       </button>
     </form>
   );

@@ -3,8 +3,7 @@ import type { Order, OrderStatus, OrderWithItems } from "@/lib/types";
 
 export type AdminOrderListItem = Order & {
   customerName: string;
-  firstItemName: string;
-  extraItemCount: number;
+  itemSummaries: { name: string; quantity: number }[];
 };
 
 export async function getAdminOrders(status?: OrderStatus): Promise<AdminOrderListItem[]> {
@@ -23,12 +22,10 @@ export async function getAdminOrders(status?: OrderStatus): Promise<AdminOrderLi
       profile: { full_name: string | null; company_name: string | null } | null;
       order_items: { product_name: string; quantity: number }[];
     };
-    const firstItem = order_items[0];
     return {
       ...order,
       customerName: profile?.company_name || profile?.full_name || order.customer_name || "Cliente",
-      firstItemName: firstItem?.product_name ?? "",
-      extraItemCount: Math.max(order_items.length - 1, 0),
+      itemSummaries: order_items.map((item) => ({ name: item.product_name, quantity: item.quantity })),
     };
   });
 }

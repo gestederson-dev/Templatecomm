@@ -96,10 +96,18 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
                   </Link>
                 </td>
                 <td className="px-4 py-3.5 text-ink/70">
-                  {order.firstItemName || "—"}
-                  {order.extraItemCount > 0 ? (
-                    <span className="ml-1.5 rounded-full bg-wine-tint px-2 py-0.5 text-[11px] font-semibold text-wine">+{order.extraItemCount}</span>
-                  ) : null}
+                  {order.itemSummaries.length === 0 ? (
+                    "—"
+                  ) : (
+                    <div className="flex flex-col gap-0.5">
+                      {order.itemSummaries.map((item, index) => (
+                        <span key={index}>
+                          {item.quantity > 1 ? <span className="font-medium text-ink/52">{item.quantity}× </span> : null}
+                          {item.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3.5 text-ink/62">{new Date(order.created_at).toLocaleDateString("pt-BR")}</td>
                 <td className="px-4 py-3.5 text-ink/62">{ORIGIN_LABEL[order.origin] ?? order.origin}</td>

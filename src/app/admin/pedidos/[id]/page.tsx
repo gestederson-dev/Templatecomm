@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderStatusForm } from "@/components/admin/order-status-form";
+import { DeleteOrderButton } from "@/components/admin/delete-order-button";
 import { StatusPill } from "@/components/admin/status-pill";
 import { adminBtnSoft, adminCard, adminPanel } from "@/components/admin/ui-styles";
 import { getAdminOrderById } from "@/lib/admin/orders";
@@ -43,9 +44,12 @@ export default async function AdminPedidoDetailPage({ params }: { params: Promis
           <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">{order.order_number}</h1>
           <StatusPill tone={STATUS_TONE[order.status] ?? "wine"}>{STATUS_LABEL[order.status] ?? order.status}</StatusPill>
         </div>
-        <Link href={`/admin/pedidos/${order.id}/editar`} className={adminBtnSoft}>
-          Editar pedido
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <Link href={`/admin/pedidos/${order.id}/editar`} className={adminBtnSoft}>
+            Editar pedido
+          </Link>
+          <DeleteOrderButton orderId={order.id} orderNumber={order.order_number} />
+        </div>
       </div>
 
       <div className={`${adminCard} flex flex-col gap-1 text-sm`}>

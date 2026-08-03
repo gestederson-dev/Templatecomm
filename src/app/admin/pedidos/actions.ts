@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserEmail } from "@/lib/email/get-user-email";
 import { orderShippedEmail } from "@/lib/email/templates";
@@ -35,4 +36,17 @@ export async function updateOrderStatusAction(_prevState: ActionState, formData:
   revalidatePath(`/admin/pedidos/${id}`);
   revalidatePath("/admin/pedidos");
   return undefined;
+}
+
+export async function deleteOrderAction(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/pedidos");
+  revalidatePath("/admin");
+  redirect("/admin/pedidos");
 }

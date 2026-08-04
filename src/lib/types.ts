@@ -204,3 +204,33 @@ export type SiteSettings = {
   store_cnpj: string | null;
   store_address: Record<string, string> | null;
 };
+
+export type FiadoCustomer = {
+  id: string;
+  name: string;
+  phone: string | null;
+  notes: string | null;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FiadoCharge = {
+  id: string;
+  customer_id: string;
+  description: string;
+  amount: number;
+  delivered: boolean;
+  occurred_at: string;
+  notes: string | null;
+  created_at: string;
+};
+
+export type FiadoPayment = {
+  id: string;
+  customer_id: string;
+  amount: number;
+  paid_at: string;
+  notes: string | null;
+  created_at: string;
+};

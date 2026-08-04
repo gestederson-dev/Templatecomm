@@ -51,6 +51,12 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
     </>
   ),
+  fiado: (
+    <>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M4 7.5h3.2M9 8h7M9 12h7M9 16h5" />
+    </>
+  ),
   precificacao: (
     <>
       <rect x="4" y="3" width="16" height="18" rx="2" />

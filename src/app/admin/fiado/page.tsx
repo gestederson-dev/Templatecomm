@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StatusPill, type PillTone } from "@/components/admin/status-pill";
+import { FiadoQuickPaymentCell } from "@/components/admin/fiado-quick-payment-cell";
 import { adminCard, adminPanel } from "@/components/admin/ui-styles";
 import { getFiadoCustomers } from "@/lib/admin/fiado";
 import { formatBRL } from "@/lib/format";
@@ -96,9 +97,7 @@ export default async function AdminFiadoPage({ searchParams }: { searchParams: P
                     </Link>
                   </td>
                   <td className="px-4 py-3.5">
-                    <Link href={`/admin/fiado/${customer.id}`} className="block tabular-nums text-ok">
-                      {formatBRL(customer.totalPaid)}
-                    </Link>
+                    <FiadoQuickPaymentCell customerId={customer.id} totalPaid={customer.totalPaid} />
                   </td>
                   <td className="px-4 py-3.5">
                     <Link href={`/admin/fiado/${customer.id}`} className={`block font-semibold tabular-nums ${customer.balance > 0 ? "text-destructive" : "text-ink/52"}`}>

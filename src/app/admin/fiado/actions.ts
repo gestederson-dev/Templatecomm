@@ -102,6 +102,47 @@ export async function addFiadoPaymentAction(_prevState: ActionState, formData: F
   return undefined;
 }
 
+/**
+ * Pendente não é um campo guardado — é sempre soma(cobranças) - soma(pagamentos).
+ * Editar o valor pendente aqui lança um "ajuste" nas cobranças (positivo ou
+ * negativo) que faz a conta bater com o valor digitado, mantendo o histórico
+ * em vez de sobrescrever um total escondido.
+ */
+export async function adjustFiadoPendingAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const customerId = String(formData.get("customerId") ?? "");
+  if (!customerId) return { error: "Cliente não encontrado." };
+
+  const newPending = Number(String(formData.get("newPending") ?? "").trim().replace(",", "."));
+  if (!Number.isFinite(newPending) || newPending < 0) return { error: "Informe um valor pendente válido." };
+
+  const supabase = await createClient();
+
+  const [{ data: charges, error: chargesError }, { data: payments, error: paymentsError }] = await Promise.all([
+    supabase.from("fiado_charges").select("amount").eq("customer_id", customerId),
+    supabase.from("fiado_payments").select("amount").eq("customer_id", customerId),
+  ]);
+  if (chargesError) return { error: chargesError.message };
+  if (paymentsError) return { error: paymentsError.message };
+
+  const totalCharged = (charges ?? []).reduce((sum, c) => sum + c.amount, 0);
+  const totalPaid = (payments ?? []).reduce((sum, p) => sum + p.amount, 0);
+  const currentPending = Math.round((totalCharged - totalPaid) * 100) / 100;
+  const diff = Math.round((newPending - currentPending) * 100) / 100;
+
+  if (diff !== 0) {
+    const { error } = await supabase.from("fiado_charges").insert({
+      customer_id: customerId,
+      description: diff > 0 ? "Ajuste manual (aumenta o pendente)" : "Ajuste manual (reduz o pendente)",
+      amount: diff,
+    });
+    if (error) return { error: error.message };
+  }
+
+  revalidatePath(`/admin/fiado/${customerId}`);
+  revalidatePath("/admin/fiado");
+  return undefined;
+}
+
 export async function toggleChargeDeliveredAction(chargeId: string, delivered: boolean): Promise<void> {
   const supabase = await createClient();
   const { data } = await supabase.from("fiado_charges").update({ delivered }).eq("id", chargeId).select("customer_id").single();

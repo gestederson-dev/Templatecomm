@@ -7,7 +7,7 @@ import { NavIcon, type NavIconKey } from "@/components/admin/nav-icon";
 
 export type AdminNavItem = { href: string; label: string; icon: NavIconKey; group: string };
 
-const GROUPS = ["Geral", "Catálogo", "Vendas", "Sistema"];
+const GROUPS = ["Geral", "Catálogo", "Vendas", "Fiado", "Sistema"];
 
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/);

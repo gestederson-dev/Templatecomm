@@ -20,6 +20,7 @@ type ProductJoin = {
   slug: string;
   base_price: number | null;
   is_active: boolean;
+  is_published: boolean;
   allow_direct_sale: boolean;
   product_images: { url: string; is_primary: boolean; sort_order: number }[];
 };
@@ -37,7 +38,7 @@ export async function reorderAction(orderId: string): Promise<ReorderState> {
 
   const { data: items, error } = await supabase
     .from("order_items")
-    .select("quantity, customization, product:products(id, name, slug, base_price, is_active, allow_direct_sale, product_images(url, is_primary, sort_order))")
+    .select("quantity, customization, product:products(id, name, slug, base_price, is_active, is_published, allow_direct_sale, product_images(url, is_primary, sort_order))")
     .eq("order_id", orderId);
   if (error) return { error: error.message };
 
@@ -46,7 +47,7 @@ export async function reorderAction(orderId: string): Promise<ReorderState> {
 
   for (const item of items ?? []) {
     const product = item.product as unknown as ProductJoin | null;
-    if (!product || !product.is_active || !product.allow_direct_sale || product.base_price == null) {
+    if (!product || !product.is_active || !product.is_published || !product.allow_direct_sale || product.base_price == null) {
       skipped += 1;
       continue;
     }

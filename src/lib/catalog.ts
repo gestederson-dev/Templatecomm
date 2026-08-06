@@ -47,7 +47,7 @@ export async function getFeaturedProducts(limit = 8): Promise<ProductListItem[]>
   const { data, error } = await supabase
     .from("products")
     .select("*, category:categories(name, slug), product_images(id, product_id, url, alt, sort_order, is_primary)")
-    .eq("is_active", true)
+    .eq("is_published", true)
     .eq("is_featured", true)
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -91,7 +91,7 @@ export async function getProducts(filters: ProductFilters): Promise<{
   let query = supabase
     .from("products")
     .select("*, category:categories!inner(name, slug), product_images(id, product_id, url, alt, sort_order, is_primary)", { count: "exact" })
-    .eq("is_active", true);
+    .eq("is_published", true);
 
   if (filters.categorySlug) {
     query = query.eq("category.slug", filters.categorySlug);
@@ -136,7 +136,7 @@ export async function getProductBySlug(slug: string): Promise<ProductWithRelatio
       "*, category:categories(id, name, slug), product_images(id, product_id, url, alt, sort_order, is_primary), product_customization_options(id, product_id, name, type, options, required, sort_order), price_tiers(id, product_id, min_quantity, max_quantity, unit_price)",
     )
     .eq("slug", slug)
-    .eq("is_active", true)
+    .eq("is_published", true)
     .maybeSingle();
 
   if (error) throw error;

@@ -176,7 +176,8 @@ export function ProductEditor({
 
           <div className={adminCard}>
             <h3 className="mb-1 font-[family-name:var(--font-display)] text-[15px] font-semibold">Publicação</h3>
-            <ToggleField name="isActive" defaultChecked={product?.is_active ?? true} label="Ativo" hint="Visível na loja" />
+            <ToggleField name="isActive" defaultChecked={product?.is_active ?? true} label="Ativo" hint="Disponível no sistema (inclusive pra pedido manual no admin)" />
+            <ToggleField name="isPublished" defaultChecked={product?.is_published ?? true} label="Publicado no site" hint="Visível e comprável na loja" />
             <ToggleField name="isFeatured" defaultChecked={product?.is_featured ?? false} label="Destaque" hint="Aparece na home" />
           </div>
 

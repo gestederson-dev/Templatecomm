@@ -6,7 +6,7 @@ import { ProductFiltersBar } from "@/components/admin/product-filters-bar";
 import { adminBtnAmber, adminIconBtn, adminPanel } from "@/components/admin/ui-styles";
 import { getAdminProducts } from "@/lib/admin/products";
 import { getAdminCategories } from "@/lib/admin/categories";
-import { toggleProductActiveAction } from "./actions";
+import { toggleProductActiveAction, toggleProductPublishedAction } from "./actions";
 import { formatBRL } from "@/lib/format";
 
 const THUMB_GRADIENTS = [
@@ -71,13 +71,14 @@ export default async function AdminProdutosPage({ searchParams }: { searchParams
               <th className="px-4 py-3.5">Estoque</th>
               <th className="px-4 py-3.5">Modelo</th>
               <th className="px-4 py-3.5">Ativo</th>
+              <th className="px-4 py-3.5">No site</th>
               <th className="px-4 py-3.5" />
             </tr>
           </thead>
           <tbody>
             {products.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-ink/52">
+                <td colSpan={8} className="px-4 py-10 text-center text-ink/52">
                   Nenhum produto encontrado.
                 </td>
               </tr>
@@ -121,6 +122,9 @@ export default async function AdminProdutosPage({ searchParams }: { searchParams
                 </td>
                 <td className="px-4 py-3.5">
                   <ToggleActiveButton id={product.id} isActive={product.is_active} action={toggleProductActiveAction} />
+                </td>
+                <td className="px-4 py-3.5">
+                  <ToggleActiveButton id={product.id} isActive={product.is_published} action={toggleProductPublishedAction} label="Publicado no site" />
                 </td>
                 <td className="px-4 py-3.5">
                   <div className="flex gap-1.5">

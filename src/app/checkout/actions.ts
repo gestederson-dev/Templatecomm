@@ -59,7 +59,7 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
 
   const { data: products, error: productsError } = await supabase
     .from("products")
-    .select("id, name, base_price, is_active, allow_direct_sale")
+    .select("id, name, base_price, is_active, is_published, allow_direct_sale")
     .in(
       "id",
       input.items.map((item) => item.productId),
@@ -70,7 +70,7 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
 
   for (const item of input.items) {
     const product = products?.find((p) => p.id === item.productId);
-    if (!product || !product.is_active || !product.allow_direct_sale || product.base_price == null) {
+    if (!product || !product.is_active || !product.is_published || !product.allow_direct_sale || product.base_price == null) {
       return { error: `Produto indisponível para compra direta: ${product?.name ?? item.productId}` };
     }
     orderItemsInput.push({

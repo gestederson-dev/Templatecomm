@@ -166,6 +166,7 @@ export type Product = {
   allow_quote: boolean;
   min_quote_quantity: number;
   is_active: boolean;
+  is_published: boolean;
   is_featured: boolean;
 };
 

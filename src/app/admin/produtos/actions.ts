@@ -51,6 +51,7 @@ export async function saveProductAction(_prevState: ActionState, formData: FormD
     min_quote_quantity: Number(formData.get("minQuoteQuantity") ?? 1) || 1,
     is_featured: formData.get("isFeatured") === "on",
     is_active: formData.get("isActive") === "on",
+    is_published: formData.get("isPublished") === "on",
   };
 
   const supabase = await createClient();
@@ -73,6 +74,12 @@ export async function saveProductAction(_prevState: ActionState, formData: FormD
 export async function toggleProductActiveAction(id: string, isActive: boolean): Promise<void> {
   const supabase = await createClient();
   await supabase.from("products").update({ is_active: isActive }).eq("id", id);
+  revalidatePath("/admin/produtos");
+}
+
+export async function toggleProductPublishedAction(id: string, isPublished: boolean): Promise<void> {
+  const supabase = await createClient();
+  await supabase.from("products").update({ is_published: isPublished }).eq("id", id);
   revalidatePath("/admin/produtos");
 }
 

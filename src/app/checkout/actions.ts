@@ -31,7 +31,9 @@ export async function quoteShippingAction(cep: string, items: { productId: strin
     if (options.length === 0) return { error: "Nenhuma opção de frete disponível para este CEP." };
     return { options };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Erro ao calcular frete." };
+    // detalhe técnico (resposta do Melhor Envio, token) fica no log do servidor, não na tela do cliente
+    console.error("[checkout] falha ao calcular frete:", e);
+    return { error: "Não conseguimos calcular o frete agora. Tente novamente em alguns minutos." };
   }
 }
 

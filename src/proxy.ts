@@ -90,6 +90,7 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+// api/cron fica de fora: o Cron da Vercel não segue o redirect do domínio antigo e não tem sessão.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|api/cron|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

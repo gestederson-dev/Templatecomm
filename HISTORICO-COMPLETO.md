@@ -27,7 +27,7 @@ original), `roteiro-fases.md`, `identidade visual/design-system (1).md`.
 | Código | `C:\Users\eders\.claude\projects\salmar-brindes` |
 | GitHub | `gestederson-dev/Templatecomm` (branch `main`) |
 | Site no ar | `salmarbrindes.com.br` (o domínio antigo `salmar-brindes.vercel.app` redireciona para ele, ver `src/proxy.ts`) |
-| Vercel | projeto `salmar-brindes` |
+| Vercel | projeto `salmar-brindes`, ligado ao GitHub desde 23/11/2026: cada push na `main` publica sozinho |
 | Banco, login e arquivos | Supabase (URL e chaves no `.env.local`) |
 | Protótipos HTML aprovados | `painel admin/`, `Mobile/`, `correção 1407/` |
 | Logo e identidade | `identidade visual/` |
@@ -65,6 +65,7 @@ original), `roteiro-fases.md`, `identidade visual/design-system (1).md`.
 | 04/08 | Área de **Fiado** (contas a receber de clientes), com edição rápida de pago e pendente |
 | 06/08 | Ativo separado de publicado; gráfico de faturamento redesenhado |
 | 18/09 | Frete parou: o token do Melhor Envio expirou depois de semanas sem uso. Corrigido (commit ef87b34), ver pendências |
+| 23/11 | **Confirmação de pedido por link** (`/confirmar/[token]`): o cliente que fechou vê o resumo com foto, escolhe pagamento, anexa a logo, diz se quer nota fiscal e preenche os dados. Respostas em Admin > Confirmações. Primeiro uso: Compec, 130 copos térmicos a R$ 26,90 |
 
 ## 5. O que o site tem hoje
 
@@ -100,11 +101,13 @@ R$ 1.995,00 vira R$ 2.158,39.
 
 ## 7. Pendências
 
-1. **Subir o commit ef87b34** (`git push`). A Vercel publica a partir da `main`.
-2. **Criar `CRON_SECRET` na Vercel** (Production). Sem ela, a renovação semanal do token
-   do Melhor Envio não roda e o frete pode travar de novo depois de semanas sem venda.
-3. Se o frete travar: Admin > Configurações > **Reconectar** Melhor Envio, pelo site no ar.
-4. Completar Configurações do site: WhatsApp, CNPJ e endereço estão vazios.
-5. Acrescentar as variáveis da seção 5 ao `.env.example`.
+1. **Criar `CRON_SECRET` na Vercel** (Production), se ainda não foi criada. Sem ela, a
+   renovação semanal do token do Melhor Envio não roda e o frete pode travar de novo.
+2. Se o frete travar: Admin > Configurações > **Reconectar** Melhor Envio, pelo site no ar.
+3. Completar Configurações do site: WhatsApp, CNPJ e endereço estão vazios.
+4. **Tela para gerar confirmações de pedido** no admin. Hoje cada confirmação é criada por
+   SQL no Supabase (ver o insert da Compec no histórico do chat de 23/11).
+5. O repositório `Templatecomm` no GitHub é público. Não tem senha nem chave, mas o código
+   fica visível; dá para tornar privado sem afetar a Vercel.
 6. A planilha de preços no Drive está com edição aberta para qualquer pessoa com o link e
    mostra o preço de custo. Vale restringir.

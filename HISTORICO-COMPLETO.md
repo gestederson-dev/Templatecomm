@@ -65,7 +65,7 @@ original), `roteiro-fases.md`, `identidade visual/design-system (1).md`.
 | 04/08 | Área de **Fiado** (contas a receber de clientes), com edição rápida de pago e pendente |
 | 06/08 | Ativo separado de publicado; gráfico de faturamento redesenhado |
 | 18/09 | Frete parou: o token do Melhor Envio expirou depois de semanas sem uso. Corrigido (commit ef87b34), ver pendências |
-| 23/11 | **Confirmação de pedido por link** (`/confirmar/[token]`): o cliente que fechou vê o resumo com foto, escolhe pagamento, anexa a logo, diz se quer nota fiscal e preenche os dados. Respostas em Admin > Confirmações. Primeiro uso: Compec, 130 copos térmicos a R$ 26,90, preço ajustado no mesmo dia para R$ 25,90 (Pix R$ 3.367,00; cartão 5x R$ 3.642,76) |
+| 23/11 | **Confirmação de pedido por link** (`/confirmar/[token]`): o cliente que fechou vê o resumo com foto, escolhe pagamento, anexa a logo, diz se quer nota fiscal e preenche os dados. Respostas em Admin > Confirmações. Primeiro uso: Compec, 130 copos térmicos a R$ 26,90, preço ajustado no mesmo dia para R$ 25,90 (Pix R$ 3.367,00; cartão 5x R$ 3.642,76). No mesmo dia: tela **Admin > Confirmações > Nova** para criar, editar e cancelar confirmações sem SQL (pagamentos calculados sozinhos, foto do catálogo ou enviada na hora) |
 
 ## 5. O que o site tem hoje
 
@@ -105,9 +105,7 @@ R$ 1.995,00 vira R$ 2.158,39.
    renovação semanal do token do Melhor Envio não roda e o frete pode travar de novo.
 2. Se o frete travar: Admin > Configurações > **Reconectar** Melhor Envio, pelo site no ar.
 3. Completar Configurações do site: WhatsApp, CNPJ e endereço estão vazios.
-4. **Tela para gerar confirmações de pedido** no admin. Hoje cada confirmação é criada por
-   SQL no Supabase (ver o insert da Compec no histórico do chat de 23/11).
-5. O repositório `Templatecomm` no GitHub é público. Não tem senha nem chave, mas o código
+4. O repositório `Templatecomm` no GitHub é público. Não tem senha nem chave, mas o código
    fica visível; dá para tornar privado sem afetar a Vercel.
-6. A planilha de preços no Drive está com edição aberta para qualquer pessoa com o link e
+5. A planilha de preços no Drive está com edição aberta para qualquer pessoa com o link e
    mostra o preço de custo. Vale restringir.

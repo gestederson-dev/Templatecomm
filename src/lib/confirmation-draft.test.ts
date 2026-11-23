@@ -132,3 +132,16 @@ describe("validateDraft", () => {
     expect(result.ok && result.value.notes).toBe(null);
   });
 });
+
+describe("ligação com pedido e orçamento", () => {
+  const order = "3f1c2b9a-1111-4222-8333-944455556666";
+  it("leva order_id, quote_id e product_id válidos", () => {
+    const result = validateDraft({ ...base, order_id: order, quote_id: "lixo", items: [{ ...base.items[0], product_id: order }] }, SUPA);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.order_id).toBe(order);
+      expect(result.value.quote_id).toBeUndefined();
+      expect(result.value.items[0].product_id).toBe(order);
+    }
+  });
+});

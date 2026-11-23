@@ -5,6 +5,8 @@ import { DeleteOrderButton } from "@/components/admin/delete-order-button";
 import { StatusPill } from "@/components/admin/status-pill";
 import { adminBtnSoft, adminCard, adminPanel } from "@/components/admin/ui-styles";
 import { getAdminOrderById } from "@/lib/admin/orders";
+import { LinkedConfirmationPanel } from "@/components/admin/confirmation-card";
+import { artFiles, getConfirmationByOrderId } from "@/lib/confirmations";
 import { formatBRL } from "@/lib/format";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -36,11 +38,13 @@ export default async function AdminPedidoDetailPage({ params }: { params: Promis
   const order = await getAdminOrderById(id);
 
   if (!order) notFound();
+  const confirmation = await getConfirmationByOrderId(order.id);
+  const arts = confirmation ? await artFiles(confirmation.logo_paths) : [];
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">{order.order_number}</h1>
           <StatusPill tone={STATUS_TONE[order.status] ?? "wine"}>{STATUS_LABEL[order.status] ?? order.status}</StatusPill>
         </div>
@@ -57,6 +61,13 @@ export default async function AdminPedidoDetailPage({ params }: { params: Promis
         <p className="font-semibold text-ink">{order.profileName || order.customer_name || "Cliente não identificado"}</p>
         {order.customer_phone ? <p className="text-ink/62">{order.customer_phone}</p> : null}
       </div>
+
+      <LinkedConfirmationPanel
+        confirmation={confirmation}
+        arts={arts}
+        createHref={order.status === "canceled" ? null : `/admin/confirmacoes/nova?pedido=${order.id}`}
+        emptyText="Mande o link para o cliente escolher o pagamento, enviar as artes e os dados da nota fiscal."
+      />
 
       <div className={adminPanel}>
         {order.items.map((item, index) => (

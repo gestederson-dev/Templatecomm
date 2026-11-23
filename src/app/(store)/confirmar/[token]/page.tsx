@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { confirmationTotal, getConfirmationByToken } from "@/lib/confirmations";
+import { artDisplayName, confirmationTotal, getConfirmationByToken } from "@/lib/confirmations";
+import { MAX_ARTS } from "@/lib/validators/confirmacao";
+import { AddArtsPanel } from "@/components/store/art-uploader";
 import { formatBRL } from "@/lib/format";
 import { storeCard, storeSectionTitle } from "@/components/store/ui-styles";
 import { OrderConfirmationForm } from "@/components/store/order-confirmation-form";
@@ -25,7 +27,9 @@ export default async function ConfirmarPedidoPage({ params }: { params: Promise<
           Olá, {confirmation.customer_label}
         </h1>
         <p className="mt-2 text-[15px] text-ink/62">
-          {respondido ? "Recebemos a confirmação do seu pedido. Obrigado!" : "Confira o que combinamos e complete os dados abaixo para darmos início ao seu pedido."}
+          {respondido
+            ? "Recebemos a confirmação do seu pedido. Obrigado!"
+            : "Confira o que combinamos e complete os dados abaixo para darmos início ao seu pedido."}
         </p>
       </div>
 
@@ -66,12 +70,49 @@ export default async function ConfirmarPedidoPage({ params }: { params: Promise<
       </section>
 
       {respondido ? (
-        <section className={`${storeCard} text-center`}>
-          <p className="font-[family-name:var(--font-display)] text-xl font-semibold">Dados recebidos</p>
-          <p className="mt-1.5 text-sm text-ink/62">Já estamos com tudo. Se precisar mudar alguma informação, é só falar com a gente.</p>
-        </section>
+        <>
+          <section className={`${storeCard} text-center`}>
+            <p className="font-[family-name:var(--font-display)] text-xl font-semibold">Dados recebidos</p>
+            <p className="mt-1.5 text-sm text-ink/62">
+              {confirmation.logo_paths.length
+                ? `Já estamos com ${confirmation.logo_paths.length > 1 ? `${confirmation.logo_paths.length} artes` : "a arte"} e seus dados.`
+                : "Já estamos com seus dados. Falta só a arte."}{" "}
+              Se precisar mudar alguma informação, é só falar com a gente.
+            </p>
+          </section>
+          <section className={`${storeCard} flex flex-col gap-3`}>
+            <h2 className={storeSectionTitle}>{confirmation.logo_paths.length ? "Quer mandar outra arte?" : "Enviar a arte"}</h2>
+            {confirmation.logo_paths.length ? (
+              <ul className="flex flex-wrap gap-2">
+                {confirmation.logo_paths.map((path) => (
+                  <li key={path} className="rounded-lg bg-ok-bg px-2.5 py-1 text-xs font-medium text-ok">
+                    ✓ {artDisplayName(path)}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <AddArtsPanel token={confirmation.token} max={MAX_ARTS - confirmation.logo_paths.length} />
+          </section>
+        </>
       ) : (
-        <OrderConfirmationForm token={confirmation.token} paymentOptions={confirmation.payment_options} />
+        <OrderConfirmationForm
+          token={confirmation.token}
+          paymentOptions={confirmation.payment_options}
+          total={total}
+          defaults={{
+            contactName: confirmation.contact_name,
+            contactPhone: confirmation.contact_phone,
+            contactEmail: confirmation.contact_email,
+            document: confirmation.document,
+            cep: confirmation.cep,
+            street: confirmation.street,
+            number: confirmation.number,
+            complement: confirmation.complement,
+            district: confirmation.district,
+            city: confirmation.city,
+            state: confirmation.state,
+          }}
+        />
       )}
     </div>
   );

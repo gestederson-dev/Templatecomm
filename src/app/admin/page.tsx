@@ -39,7 +39,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard label="Faturamento" value={formatBRL(metrics.revenue)} delta={revenueDelta != null ? `${revenueDelta >= 0 ? "+" : ""}${revenueDelta.toFixed(1)}% vs período anterior` : undefined} />
+        <StatCard
+          label="Faturamento"
+          value={formatBRL(metrics.revenue)}
+          delta={revenueDelta != null ? `${revenueDelta >= 0 ? "+" : ""}${revenueDelta.toFixed(1)}% vs período anterior` : undefined}
+        />
         <StatCard label="Pedidos" value={String(metrics.orderCount)} />
         <StatCard label="Ticket médio" value={formatBRL(metrics.averageTicket)} />
         <StatCard label="Orçamentos pendentes" value={String(metrics.pendingQuotes)} highlight={metrics.pendingQuotes > 0} />
@@ -55,6 +59,12 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               <p className="mt-0.5 text-[12.5px] text-ink/52">
                 Site: <span className="font-semibold tabular-nums text-ink/70">{formatBRL(metrics.siteRevenue)}</span> · WhatsApp/Manual:{" "}
                 <span className="font-semibold tabular-nums text-ink/70">{formatBRL(metrics.manualRevenue)}</span>
+                {metrics.fiadoRevenue > 0 ? (
+                  <>
+                    {" "}
+                    · Fiado recebido: <span className="font-semibold tabular-nums text-ink/70">{formatBRL(metrics.fiadoRevenue)}</span>
+                  </>
+                ) : null}
               </p>
             </div>
             <div className="font-[family-name:var(--font-display)] text-2xl font-bold tracking-[-0.02em] text-wine">{formatBRL(metrics.revenue)}</div>

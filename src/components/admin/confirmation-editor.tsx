@@ -16,14 +16,20 @@ type ItemRow = {
   quantity: string;
   unitPrice: string;
   imageUrl: string;
+  productId: string;
 };
 
+/** Sem id: confirmação nova (pode vir preenchida de um pedido ou orçamento). Com id: edição. */
 export type ConfirmationEditorInitial = {
-  id: string;
+  id?: string;
   customerLabel: string;
   items: DraftItem[];
-  payment: PaymentConfig;
+  payment?: PaymentConfig;
   notes: string;
+  orderId?: string | null;
+  quoteId?: string | null;
+  /** ex.: "Pedido PED-000123" — aparece no topo para lembrar de onde veio */
+  sourceLabel?: string;
 };
 
 /** Aceita "25,90", "25.90" e "1.234,56". */
@@ -43,6 +49,7 @@ const newRow = (patch: Partial<ItemRow> = {}): ItemRow => ({
   quantity: "",
   unitPrice: "",
   imageUrl: "",
+  productId: "",
   ...patch,
 });
 
@@ -56,7 +63,8 @@ function Check({ checked, onChange, children }: { checked: boolean; onChange: (v
 }
 
 export function ConfirmationEditor({ products, initial }: { products: ConfirmationProductOption[]; initial?: ConfirmationEditorInitial }) {
-  const action = initial ? updateConfirmationAction.bind(null, initial.id) : createConfirmationAction;
+  const editing = Boolean(initial?.id);
+  const action = initial?.id ? updateConfirmationAction.bind(null, initial.id) : createConfirmationAction;
   const [state, formAction, saving] = useActionState<EditorState, FormData>(action, undefined);
 
   const [customerLabel, setCustomerLabel] = useState(initial?.customerLabel ?? "");
@@ -69,6 +77,7 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
             quantity: String(item.quantity),
             unitPrice: moneyText(item.unit_price),
             imageUrl: item.image_url ?? "",
+            productId: item.product_id ?? "",
           }),
         )
       : [],
@@ -84,7 +93,7 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
   );
   const [rateText, setRateText] = useState(String(payment.cardRate).replace(".", ","));
   const [notes, setNotes] = useState(initial?.notes ?? DEFAULT_NOTES);
-  const [pickerOpen, setPickerOpen] = useState(!initial);
+  const [pickerOpen, setPickerOpen] = useState(!initial || initial.items.length === 0);
   const [pickSearch, setPickSearch] = useState("");
 
   const [uploadingKey, setUploadingKey] = useState<number | null>(null);
@@ -109,6 +118,7 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
         name: product.name,
         unitPrice: moneyText(product.basePrice),
         imageUrl: product.imageUrl ?? "",
+        productId: product.id,
       }),
     ]);
     setPickerOpen(false);
@@ -144,14 +154,24 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
       quantity: Number(row.quantity),
       unit_price: parseMoney(row.unitPrice),
       image_url: row.imageUrl,
+      product_id: row.productId || undefined,
     })),
     payment,
     notes,
+    order_id: initial?.orderId ?? null,
+    quote_id: initial?.quoteId ?? null,
   };
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <input type="hidden" name="draft" value={JSON.stringify(draft)} />
+
+      {initial?.sourceLabel ? (
+        <p className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink/70">
+          Gerada a partir de <strong className="text-ink">{initial.sourceLabel}</strong>. Confira os itens e escolha as formas de pagamento; quando o cliente
+          responder, a ficha fica ligada a {initial.orderId ? "este pedido" : "este orçamento"}.
+        </p>
+      ) : null}
 
       <div className={`${adminCard} flex flex-col gap-3`}>
         <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Cliente</h2>
@@ -427,7 +447,7 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
           Voltar
         </Link>
         <button type="submit" disabled={saving || uploadingKey !== null} className={adminBtnWine}>
-          {saving ? "Salvando…" : initial ? "Salvar alterações" : "Criar e gerar link"}
+          {saving ? "Salvando…" : editing ? "Salvar alterações" : "Criar e gerar link"}
         </button>
       </div>
     </form>

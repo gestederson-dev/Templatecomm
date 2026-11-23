@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { cancelConfirmationAction } from "@/app/admin/confirmacoes/actions";
+import { cancelConfirmationAction, createOrderFromConfirmationAction } from "@/app/admin/confirmacoes/actions";
 import { adminBtnSoft, adminBtnWine } from "@/components/admin/ui-styles";
 import { whatsappLink } from "@/lib/format";
 
@@ -104,6 +104,50 @@ export function ConfirmationLinkActions({ id, url, customer, highlight = false }
           {canceling ? "Cancelando…" : "Cancelar"}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Copiar o link direto da linha fechada da lista, sem abrir a confirmação. */
+export function CopyLinkIcon({ url }: { url: string }) {
+  const { copied, copy } = useCopy();
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.preventDefault(); // não abre/fecha a linha
+        copy(url);
+      }}
+      title="Copiar link"
+      aria-label="Copiar link"
+      className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg border transition-colors ${
+        copied ? "border-ok bg-ok-bg text-ok" : "border-line bg-white text-wine hover:border-wine"
+      }`}
+    >
+      <Icon d={copied ? ICON.check : ICON.copy} />
+    </button>
+  );
+}
+
+export function RegisterOrderButton({ id }: { id: string }) {
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            const result = await createOrderFromConfirmationAction(id);
+            if (result?.error) setError(result.error);
+          })
+        }
+        className={`${adminBtnWine} ${smallBtn}`}
+      >
+        {pending ? "Registrando…" : "Registrar pedido"}
+      </button>
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
   );
 }

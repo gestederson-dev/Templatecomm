@@ -1,11 +1,16 @@
 import { validarCNPJ, validarCPF } from "./documento";
 
+/** Bucket privado das artes (aqui e não em lib/confirmations porque o navegador também usa). */
+export const LOGO_BUCKET = "order-confirmation-logos";
+
 /** Extensões aceitas pra logo: imagem comum + arquivos de gráfica (vetor/PDF). */
 export const LOGO_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "svg", "pdf", "ai", "eps", "cdr"];
-export const LOGO_MAX_BYTES = 8 * 1024 * 1024; // abaixo do bodySizeLimit de 10mb das Server Actions
+// a arte vai direto do navegador para o Storage (link assinado), então não passa pelo limite de 4,5 MB da Vercel
+export const LOGO_MAX_BYTES = 25 * 1024 * 1024;
+export const MAX_ARTS = 6;
 
 export type ConfirmationInput = {
-  paymentChoice: string;
+  paymentChoice: string | null;
   wantsInvoice: boolean;
   contactName: string;
   contactPhone: string;
@@ -32,8 +37,9 @@ const onlyDigits = (value: string) => value.replace(/\D/g, "");
 export function validateConfirmationInput(fields: Record<string, string | undefined>, paymentIds: string[]): Result {
   const get = (key: string) => (fields[key] ?? "").trim();
 
-  const paymentChoice = get("paymentChoice");
-  if (!paymentIds.includes(paymentChoice)) return { ok: false, error: "Escolha a forma de pagamento." };
+  // compra feita no site já vem paga: a confirmação não tem opções de pagamento
+  const paymentChoice = paymentIds.length === 0 ? null : get("paymentChoice");
+  if (paymentChoice !== null && !paymentIds.includes(paymentChoice)) return { ok: false, error: "Escolha a forma de pagamento." };
 
   const invoice = get("wantsInvoice");
   if (invoice !== "sim" && invoice !== "nao") return { ok: false, error: "Diga se você precisa de nota fiscal." };
@@ -54,8 +60,20 @@ export function validateConfirmationInput(fields: Record<string, string | undefi
     return {
       ok: true,
       data: {
-        paymentChoice, wantsInvoice, contactName, contactPhone, contactEmail, customerMessage,
-        document: null, cep: null, street: null, number: null, complement: null, district: null, city: null, state: null,
+        paymentChoice,
+        wantsInvoice,
+        contactName,
+        contactPhone,
+        contactEmail,
+        customerMessage,
+        document: null,
+        cep: null,
+        street: null,
+        number: null,
+        complement: null,
+        district: null,
+        city: null,
+        state: null,
       },
     };
   }
@@ -78,8 +96,20 @@ export function validateConfirmationInput(fields: Record<string, string | undefi
   return {
     ok: true,
     data: {
-      paymentChoice, wantsInvoice, contactName, contactPhone, contactEmail, customerMessage,
-      document, cep, street, number, complement: get("complement") || null, district, city, state,
+      paymentChoice,
+      wantsInvoice,
+      contactName,
+      contactPhone,
+      contactEmail,
+      customerMessage,
+      document,
+      cep,
+      street,
+      number,
+      complement: get("complement") || null,
+      district,
+      city,
+      state,
     },
   };
 }
@@ -87,8 +117,21 @@ export function validateConfirmationInput(fields: Record<string, string | undefi
 /** Confere nome e tamanho da logo; o conteúdo em si a gente não interpreta, só guarda. */
 export function validateLogo(fileName: string, size: number): string | null {
   if (size === 0) return "Anexe a logo para a personalização.";
-  if (size > LOGO_MAX_BYTES) return "A logo pode ter no máximo 8 MB.";
+  if (size > LOGO_MAX_BYTES) return "Cada arte pode ter no máximo 25 MB.";
   const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
   if (!LOGO_EXTENSIONS.includes(ext)) return `Formato não aceito. Envie em ${LOGO_EXTENSIONS.join(", ").toUpperCase()}.`;
   return null;
+}
+
+/**
+ * Caminhos de arte que o navegador diz ter enviado. Só vale o que está na pasta
+ * da própria confirmação, sem repetir e sem passar do limite junto com as que já existem.
+ */
+export function validateArtPaths(raw: unknown, confirmationId: string, alreadyStored: number): { ok: true; paths: string[] } | { ok: false; error: string } {
+  if (!Array.isArray(raw)) return { ok: false, error: "Arquivos inválidos." };
+  const paths = [...new Set(raw.map(String))];
+  const pattern = new RegExp(`^${confirmationId}/\\d+-[\\w.\\-]+$`);
+  if (paths.some((path) => !pattern.test(path))) return { ok: false, error: "Arquivos inválidos." };
+  if (paths.length + alreadyStored > MAX_ARTS) return { ok: false, error: `Você pode enviar até ${MAX_ARTS} artes.` };
+  return { ok: true, paths };
 }

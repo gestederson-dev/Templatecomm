@@ -17,7 +17,7 @@ export default async function EditarConfirmacaoPage({ params }: { params: Promis
         <p className="mt-0.5 text-[13px] text-ink/52">O link continua o mesmo: o cliente vê os valores novos ao abrir de novo.</p>
       </div>
 
-      {confirmation.status === "pendente" ? (
+      {confirmation.status === "pendente" && confirmation.payment_options.length > 0 ? (
         <ConfirmationEditor
           products={products}
           initial={{
@@ -26,12 +26,16 @@ export default async function EditarConfirmacaoPage({ params }: { params: Promis
             items: confirmation.items,
             payment: paymentConfigFromOptions(draftTotal(confirmation.items), confirmation.payment_options),
             notes: confirmation.notes ?? "",
+            orderId: confirmation.order_id,
+            quoteId: confirmation.quote_id,
           }}
         />
       ) : (
         <div className={`${adminCard} flex flex-col items-start gap-3`}>
           <p className="text-sm text-ink/70">
-            Esta confirmação está <strong>{confirmation.status}</strong> e não pode mais ser alterada. Para mudar valores, crie uma nova.
+            {confirmation.payment_options.length === 0
+              ? "Esta confirmação é de uma compra feita no site: os itens e o pagamento vêm do pedido e não se editam aqui."
+              : `Esta confirmação está ${confirmation.status} e não pode mais ser alterada. Para mudar valores, crie uma nova.`}
           </p>
           <Link href="/admin/confirmacoes" className={adminBtnSoft}>
             Voltar

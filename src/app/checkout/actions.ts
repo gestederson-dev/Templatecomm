@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createConfirmationForSiteOrder } from "@/lib/confirmations";
 import { getShippingProvider, type ShippingOption } from "@/lib/shipping";
 import { getPaymentProvider } from "@/lib/payments";
 import type { PaymentStatus } from "@/lib/payments";
@@ -68,7 +69,14 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
     );
   if (productsError) return { error: productsError.message };
 
-  const orderItemsInput: { product_id: string; product_name: string; quantity: number; unit_price: number; total: number; customization: Record<string, string> | null }[] = [];
+  const orderItemsInput: {
+    product_id: string;
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+    total: number;
+    customization: Record<string, string> | null;
+  }[] = [];
 
   for (const item of input.items) {
     const product = products?.find((p) => p.id === item.productId);
@@ -118,12 +126,14 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
   const { error: itemsError } = await supabase.from("order_items").insert(orderItemsInput.map((item) => ({ ...item, order_id: order.id })));
   if (itemsError) return { error: itemsError.message };
 
+  // mesma comunicação de toda venda: o cliente envia a arte e diz se quer nota pelo link da confirmação
+  await createConfirmationForSiteOrder(order.id, user.email);
+
   return { orderId: order.id, orderNumber: order.order_number, total, payerEmail: user.email };
 }
 
 export type ProcessPaymentState =
-  | { status: PaymentStatus; paymentId: string; paymentTypeId: string; qrCode?: string; qrCodeBase64?: string; ticketUrl?: string }
-  | { error: string };
+  { status: PaymentStatus; paymentId: string; paymentTypeId: string; qrCode?: string; qrCodeBase64?: string; ticketUrl?: string } | { error: string };
 
 /**
  * Processa o pagamento vindo do Payment Brick e devolve o resultado pra tela

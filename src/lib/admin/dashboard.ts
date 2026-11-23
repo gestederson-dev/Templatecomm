@@ -5,6 +5,8 @@ export type DashboardMetrics = {
   previousRevenue: number;
   siteRevenue: number;
   manualRevenue: number;
+  /** pagamentos de fiado recebidos no período (contam no dia em que foram pagos) */
+  fiadoRevenue: number;
   orderCount: number;
   averageTicket: number;
   pendingQuotes: number;
@@ -21,6 +23,21 @@ function toISODate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** Pedido conta no faturamento a partir de pago: preparar, enviar e entregar não tiram ele da conta. */
+export const REVENUE_STATUSES = ["paid", "processing", "shipped", "delivered"];
+
+type FiadoPaymentRow = { amount: number; paid_at: string };
+
+/** Soma pedidos e pagamentos de fiado por dia (fiado entra na data em que foi pago). */
+export function mergeRevenueByDay(orders: { total: number; created_at: string }[], fiado: FiadoPaymentRow[]): { date: string; revenue: number }[] {
+  const byDay = new Map<string, number>();
+  for (const order of orders) byDay.set(order.created_at.slice(0, 10), (byDay.get(order.created_at.slice(0, 10)) ?? 0) + Number(order.total));
+  for (const payment of fiado) byDay.set(payment.paid_at.slice(0, 10), (byDay.get(payment.paid_at.slice(0, 10)) ?? 0) + Number(payment.amount));
+  return Array.from(byDay.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, revenue]) => ({ date, revenue: Math.round(revenue * 100) / 100 }));
+}
+
 export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise<DashboardMetrics> {
   const supabase = await createClient();
 
@@ -31,45 +48,57 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
   const fromISO = fromDate.toISOString();
   const toISO = toDate.toISOString();
 
-  const [{ data: orders }, { data: previousOrders }, { count: pendingQuotes }, { data: allQuotes }, { count: newCustomersCount }, { data: orderItems }, { data: recentOrdersRaw }] =
-    await Promise.all([
-      supabase.from("orders").select("id, total, status, origin, created_at").eq("status", "paid").gte("created_at", fromISO).lt("created_at", toISO),
-      supabase.from("orders").select("total").eq("status", "paid").gte("created_at", previousFrom.toISOString()).lt("created_at", previousTo.toISOString()),
-      supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "requested"),
-      supabase.from("quotes").select("status, created_at").gte("created_at", fromISO).lt("created_at", toISO),
-      supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer").gte("created_at", fromISO).lt("created_at", toISO),
-      supabase
-        .from("order_items")
-        .select("product_name, quantity, orders!inner(status, created_at)")
-        .eq("orders.status", "paid")
-        .gte("orders.created_at", fromISO)
-        .lt("orders.created_at", toISO),
-      supabase
-        .from("orders")
-        .select("id, order_number, total, status, origin, created_at, customer_name, profile:profiles(full_name, company_name)")
-        .order("created_at", { ascending: false })
-        .limit(5),
-    ]);
+  const [
+    { data: orders },
+    { data: previousOrders },
+    { count: pendingQuotes },
+    { data: allQuotes },
+    { count: newCustomersCount },
+    { data: orderItems },
+    { data: recentOrdersRaw },
+    { data: fiadoPayments },
+    { data: previousFiadoPayments },
+  ] = await Promise.all([
+    supabase.from("orders").select("id, total, status, origin, created_at").in("status", REVENUE_STATUSES).gte("created_at", fromISO).lt("created_at", toISO),
+    supabase
+      .from("orders")
+      .select("total")
+      .in("status", REVENUE_STATUSES)
+      .gte("created_at", previousFrom.toISOString())
+      .lt("created_at", previousTo.toISOString()),
+    supabase.from("quotes").select("id", { count: "exact", head: true }).eq("status", "requested"),
+    supabase.from("quotes").select("status, created_at").gte("created_at", fromISO).lt("created_at", toISO),
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer").gte("created_at", fromISO).lt("created_at", toISO),
+    supabase
+      .from("order_items")
+      .select("product_name, quantity, orders!inner(status, created_at)")
+      .in("orders.status", REVENUE_STATUSES)
+      .gte("orders.created_at", fromISO)
+      .lt("orders.created_at", toISO),
+    supabase
+      .from("orders")
+      .select("id, order_number, total, status, origin, created_at, customer_name, profile:profiles(full_name, company_name)")
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase.from("fiado_payments").select("amount, paid_at").gte("paid_at", toISODate(fromDate)).lte("paid_at", toISODate(toDate)),
+    supabase.from("fiado_payments").select("amount, paid_at").gte("paid_at", toISODate(previousFrom)).lt("paid_at", toISODate(previousTo)),
+  ]);
 
-  const revenue = (orders ?? []).reduce((sum, o) => sum + o.total, 0);
-  const previousRevenue = (previousOrders ?? []).reduce((sum, o) => sum + o.total, 0);
-  const manualRevenue = (orders ?? []).filter((o) => o.origin === "manual").reduce((sum, o) => sum + o.total, 0);
-  const siteRevenue = revenue - manualRevenue;
+  const sum = (rows: { total?: number; amount?: number }[] | null) => (rows ?? []).reduce((acc, row) => acc + Number(row.total ?? row.amount ?? 0), 0);
+  const ordersRevenue = sum(orders);
+  const fiadoRevenue = sum(fiadoPayments);
+  const revenue = ordersRevenue + fiadoRevenue;
+  const previousRevenue = sum(previousOrders) + sum(previousFiadoPayments);
+  const manualRevenue = sum((orders ?? []).filter((o) => o.origin === "manual"));
+  const siteRevenue = ordersRevenue - manualRevenue;
   const orderCount = orders?.length ?? 0;
-  const averageTicket = orderCount > 0 ? revenue / orderCount : 0;
+  const averageTicket = orderCount > 0 ? ordersRevenue / orderCount : 0;
 
   const quotesInPeriod = allQuotes ?? [];
   const convertedInPeriod = quotesInPeriod.filter((q) => q.status === "converted").length;
   const conversionRate = quotesInPeriod.length > 0 ? convertedInPeriod / quotesInPeriod.length : 0;
 
-  const revenueByDayMap = new Map<string, number>();
-  for (const order of orders ?? []) {
-    const day = order.created_at.slice(0, 10);
-    revenueByDayMap.set(day, (revenueByDayMap.get(day) ?? 0) + order.total);
-  }
-  const revenueByDay = Array.from(revenueByDayMap.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, revenue]) => ({ date, revenue }));
+  const revenueByDay = mergeRevenueByDay(orders ?? [], (fiadoPayments ?? []) as FiadoPaymentRow[]);
 
   const { data: statusRows } = await supabase.from("orders").select("status").gte("created_at", fromISO).lt("created_at", toISO);
   const statusCounts = new Map<string, number>();
@@ -122,6 +151,7 @@ export async function getDashboardMetrics(fromDate: Date, toDate: Date): Promise
     previousRevenue,
     siteRevenue,
     manualRevenue,
+    fiadoRevenue,
     orderCount,
     averageTicket,
     pendingQuotes: pendingQuotes ?? 0,

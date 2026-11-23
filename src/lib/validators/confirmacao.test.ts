@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateConfirmationInput, validateLogo } from "./confirmacao";
+import { validateArtPaths, validateConfirmationInput, validateLogo } from "./confirmacao";
 
 const PAGAMENTOS = ["pix", "cartao", "entrada"];
 
@@ -75,7 +75,33 @@ describe("validateLogo", () => {
   });
   it("recusa arquivo vazio, grande demais ou de formato estranho", () => {
     expect(validateLogo("logo.png", 0)).not.toBeNull();
-    expect(validateLogo("logo.png", 9 * 1024 * 1024)).not.toBeNull();
+    expect(validateLogo("logo.png", 26 * 1024 * 1024)).not.toBeNull();
+    expect(validateLogo("logo.pdf", 20 * 1024 * 1024)).toBeNull();
     expect(validateLogo("logo.exe", 1000)).not.toBeNull();
+  });
+});
+
+describe("compra do site (sem opções de pagamento)", () => {
+  it("não exige forma de pagamento", () => {
+    const r = validateConfirmationInput({ ...base, paymentChoice: "" }, []);
+    expect(r.ok && r.data.paymentChoice).toBe(null);
+  });
+});
+
+describe("validateArtPaths", () => {
+  const id = "3f1c2b9a-1111-4222-8333-944455556666";
+  it("aceita arquivos da própria pasta", () => {
+    const r = validateArtPaths([`${id}/1732380000000-logo.png`, `${id}/1732380000001-logo-branca.cdr`], id, 0);
+    expect(r.ok && r.paths.length).toBe(2);
+  });
+  it("recusa pasta de outra confirmação ou caminho estranho", () => {
+    expect(validateArtPaths([`outra/1-logo.png`], id, 0).ok).toBe(false);
+    expect(validateArtPaths([`${id}/../x/1-logo.png`], id, 0).ok).toBe(false);
+    expect(validateArtPaths("nao-e-lista", id, 0).ok).toBe(false);
+  });
+  it("respeita o limite somando as que já existem", () => {
+    const paths = [1, 2, 3].map((n) => `${id}/${n}-a.png`);
+    expect(validateArtPaths(paths, id, 4).ok).toBe(false);
+    expect(validateArtPaths(paths, id, 3).ok).toBe(true);
   });
 });

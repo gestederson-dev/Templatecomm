@@ -4,6 +4,8 @@ import { StatusPill, type PillTone } from "@/components/admin/status-pill";
 import { QuoteDetail } from "@/components/admin/quote-detail";
 import { adminCard } from "@/components/admin/ui-styles";
 import { getAdminQuoteById } from "@/lib/admin/quotes";
+import { LinkedConfirmationPanel } from "@/components/admin/confirmation-card";
+import { artFiles, getConfirmationsByQuoteId } from "@/lib/confirmations";
 import { formatarCNPJ, formatarCPF } from "@/lib/validators/documento";
 import type { QuoteStatus } from "@/lib/types";
 
@@ -39,6 +41,10 @@ export default async function AdminOrcamentoDetailPage({ params }: { params: Pro
   const quote = await getAdminQuoteById(id);
 
   if (!quote) notFound();
+  const confirmation = (await getConfirmationsByQuoteId(quote.id)).find((c) => c.status !== "cancelado") ?? null;
+  const arts = confirmation ? await artFiles(confirmation.logo_paths) : [];
+  const cotado = quote.items.length > 0 && quote.items.every((item) => item.unit_price != null && item.unit_price > 0);
+  const podeGerar = cotado && (quote.status === "quoted" || quote.status === "approved");
 
   const clientName = quote.profile?.company_name || quote.profile?.full_name || "Cliente";
   const document = quote.profile?.person_type === "pj" ? formatarCNPJ(quote.profile.cnpj ?? "") : formatarCPF(quote.profile?.cpf ?? "");
@@ -94,6 +100,13 @@ export default async function AdminOrcamentoDetailPage({ params }: { params: Pro
           </div>
         </div>
       ) : null}
+
+      <LinkedConfirmationPanel
+        confirmation={confirmation}
+        arts={arts}
+        createHref={podeGerar ? `/admin/confirmacoes/nova?orcamento=${quote.id}` : null}
+        emptyText="O cliente aprovou? Mande o link para ele escolher o pagamento, enviar as artes e os dados da nota fiscal."
+      />
 
       <QuoteDetail
         quoteId={quote.id}

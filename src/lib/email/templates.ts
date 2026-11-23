@@ -19,16 +19,20 @@ export function confirmationReceivedEmail(
   customerLabel: string,
   lines: [string, string][],
   adminUrl: string,
+  kind: "confirmou" | "nova-arte" = "confirmou",
 ): { subject: string; html: string } {
   const rows = lines
-    .map(([label, value]) => `<tr><td style="padding:4px 12px 4px 0;color:#898781;">${escapeHtml(label)}</td><td style="padding:4px 0;">${escapeHtml(value)}</td></tr>`)
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:4px 12px 4px 0;color:#898781;">${escapeHtml(label)}</td><td style="padding:4px 0;">${escapeHtml(value)}</td></tr>`,
+    )
     .join("");
   return {
-    subject: `Confirmação de pedido preenchida — ${customerLabel}`,
+    subject: kind === "confirmou" ? `Confirmação de pedido preenchida — ${customerLabel}` : `Nova arte enviada — ${customerLabel}`,
     html: layout(
-      `${escapeHtml(customerLabel)} confirmou o pedido`,
+      kind === "confirmou" ? `${escapeHtml(customerLabel)} confirmou o pedido` : `${escapeHtml(customerLabel)} enviou mais arte`,
       `<table style="font-size:14px;border-collapse:collapse;">${rows}</table>
-       <p style="margin-top:16px;"><a href="${adminUrl}">Ver no painel e baixar a logo</a></p>`,
+       <p style="margin-top:16px;"><a href="${adminUrl}">Ver no painel e baixar as artes</a></p>`,
     ),
   };
 }

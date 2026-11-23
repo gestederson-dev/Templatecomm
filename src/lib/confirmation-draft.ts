@@ -8,6 +8,7 @@ export type DraftItem = {
   quantity: number;
   unit_price: number;
   image_url?: string;
+  product_id?: string;
 };
 export type DraftPaymentOption = {
   id: string;
@@ -30,7 +31,13 @@ export type ConfirmationDraft = {
   items: DraftItem[];
   payment: PaymentConfig;
   notes: string;
+  /** pedido ou orçamento de onde a confirmação nasceu */
+  order_id?: string | null;
+  quote_id?: string | null;
 };
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const optionalUuid = (value: unknown) => (typeof value === "string" && UUID.test(value) ? value : null);
 
 export const DEFAULT_CARD_RATE = 7.57;
 export const DEFAULT_CARD_INSTALLMENTS = 5;
@@ -106,6 +113,8 @@ export type DraftResult =
         items: DraftItem[];
         payment_options: DraftPaymentOption[];
         notes: string | null;
+        order_id?: string;
+        quote_id?: string;
       };
     }
   | { ok: false; error: string };
@@ -129,6 +138,7 @@ export function validateDraft(raw: unknown, supabaseUrl: string | undefined): Dr
     const quantity = Number(rawItem?.quantity);
     const unitPrice = Number(rawItem?.unit_price);
     const imageUrl = String(rawItem?.image_url ?? "").trim();
+    const productId = optionalUuid(rawItem?.product_id);
     if (!name) return { ok: false, error: `Informe o nome do produto ${n}.` };
     if (!Number.isInteger(quantity) || quantity <= 0)
       return {
@@ -151,6 +161,7 @@ export function validateDraft(raw: unknown, supabaseUrl: string | undefined): Dr
       quantity,
       unit_price: round2(unitPrice),
       ...(imageUrl ? { image_url: imageUrl } : {}),
+      ...(productId ? { product_id: productId } : {}),
     });
   }
 
@@ -173,6 +184,8 @@ export function validateDraft(raw: unknown, supabaseUrl: string | undefined): Dr
   });
 
   const notes = String(draft.notes ?? "").trim();
+  const orderId = optionalUuid(draft.order_id);
+  const quoteId = optionalUuid(draft.quote_id);
   return {
     ok: true,
     value: {
@@ -180,6 +193,8 @@ export function validateDraft(raw: unknown, supabaseUrl: string | undefined): Dr
       items,
       payment_options,
       notes: notes || null,
+      ...(orderId ? { order_id: orderId } : {}),
+      ...(quoteId ? { quote_id: quoteId } : {}),
     },
   };
 }

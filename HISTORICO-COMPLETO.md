@@ -66,6 +66,7 @@ original), `roteiro-fases.md`, `identidade visual/design-system (1).md`.
 | 06/08 | Ativo separado de publicado; gráfico de faturamento redesenhado |
 | 18/09 | Frete parou: o token do Melhor Envio expirou depois de semanas sem uso. Corrigido (commit ef87b34), ver pendências |
 | 23/11 | **Confirmação de pedido por link** (`/confirmar/[token]`): o cliente que fechou vê o resumo com foto, escolhe pagamento, anexa a logo, diz se quer nota fiscal e preenche os dados. Respostas em Admin > Confirmações. Primeiro uso: Compec, 130 copos térmicos a R$ 26,90, preço ajustado no mesmo dia para R$ 25,90 (Pix R$ 3.367,00; cartão 5x R$ 3.642,76). No mesmo dia: tela **Admin > Confirmações > Nova** para criar, editar e cancelar confirmações sem SQL (pagamentos calculados sozinhos, foto do catálogo ou enviada na hora) |
+| 23/11 | **Confirmação vira o padrão de toda venda** (migration 0017): várias artes por confirmação (até 6, 25 MB cada, upload direto do navegador para o Storage) e opção "envio a arte depois"; compra no site cria a confirmação sozinha e "Meu pedido" pede arte e nota; pedido manual e orçamento cotado têm botão **Gerar confirmação**; confirmação respondida tem **Registrar pedido** (orçamento vira convertido). Lista de confirmações compacta com filtros. Dashboard: fiado entra no faturamento na data do pagamento, e pedidos em preparação, enviados ou entregues voltaram a contar |
 
 ## 5. O que o site tem hoje
 
@@ -79,8 +80,8 @@ publicado), categorias, pedidos (lista, detalhe, novo manual, editar, excluir),
 orçamentos (fila, cotar, converter em pedido, novo manual), clientes, cupons, banners,
 fiado, precificação, configurações (dados da loja + conexão com o Melhor Envio).
 
-**Banco:** 15 migrations em `supabase/migrations/` (0001 schema inicial até 0015
-publicar produto). RLS em todas as tabelas.
+**Banco:** 17 migrations em `supabase/migrations/` (0001 schema inicial até 0017
+confirmação unificada). RLS em todas as tabelas.
 
 **Variáveis de ambiente:** as do `.env.example`, mais `MELHOR_ENVIO_CLIENT_ID`,
 `MELHOR_ENVIO_CLIENT_SECRET` e `CRON_SECRET`, que o código usa mas ainda não estão listadas

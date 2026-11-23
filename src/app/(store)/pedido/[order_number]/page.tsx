@@ -5,6 +5,9 @@ import { StatusPill } from "@/components/store/status-pill";
 import { OrderStatusTimeline } from "@/components/store/order-status-timeline";
 import { storeCard } from "@/components/store/ui-styles";
 import { getOrderByNumber } from "@/lib/orders";
+import { getOrCreateConfirmationForOwnedOrder, type OrderConfirmationSummary } from "@/lib/confirmations";
+import { createClient } from "@/lib/supabase/server";
+import { MAX_ARTS } from "@/lib/validators/confirmacao";
 import { formatBRL } from "@/lib/format";
 import { getPaymentProvider } from "@/lib/payments";
 import { PixInstructions, BoletoInstructions } from "@/components/checkout/payment-instructions";
@@ -55,6 +58,48 @@ async function getPendingPaymentInstructions(order: { status: string; payment_id
   }
 }
 
+/** Mesmo passo de toda venda da Salmar: arte(s) e dados da nota fiscal, pelo link da confirmação. */
+function ArteENota({ c }: { c: OrderConfirmationSummary }) {
+  const href = `/confirmar/${c.token}`;
+  if (c.status === "pendente") {
+    return (
+      <div className="mt-6 flex flex-col gap-3 rounded-2xl border-2 border-wine/25 bg-wine-tint/40 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-[family-name:var(--font-display)] text-lg font-semibold text-ink">Falta pouco: envie sua arte</p>
+          <p className="mt-0.5 text-sm text-ink/65">Mande a logo para a personalização e diga se precisa de nota fiscal. Leva 1 minuto.</p>
+        </div>
+        <Link
+          href={href}
+          className="inline-flex shrink-0 items-center justify-center rounded-xl bg-wine px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-px"
+        >
+          Enviar arte e dados
+        </Link>
+      </div>
+    );
+  }
+  if (c.status !== "respondido") return null;
+  return (
+    <div className={`${storeCard} mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between`}>
+      <p className="text-sm text-ink/70">
+        {c.artCount > 0 ? (
+          <>
+            <span className="font-semibold text-ok">✓ Recebemos {c.artCount > 1 ? `${c.artCount} artes` : "sua arte"}</span> e os dados do pedido.
+          </>
+        ) : (
+          <>
+            <span className="font-semibold text-wine">Falta a arte.</span> Seus dados já chegaram.
+          </>
+        )}
+      </p>
+      {c.artCount < MAX_ARTS ? (
+        <Link href={href} className="text-sm font-semibold text-wine underline-offset-2 hover:underline">
+          {c.artCount > 0 ? "Enviar outra arte" : "Enviar a arte"} →
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 export default async function PedidoPage({ params }: { params: Promise<{ order_number: string }> }) {
   const { order_number: orderNumber } = await params;
   const order = await getOrderByNumber(orderNumber);
@@ -62,6 +107,10 @@ export default async function PedidoPage({ params }: { params: Promise<{ order_n
   if (!order) notFound();
 
   const paymentInstructions = await getPendingPaymentInstructions(order);
+  const {
+    data: { user },
+  } = await (await createClient()).auth.getUser();
+  const confirmation = await getOrCreateConfirmationForOwnedOrder(order, user?.email ?? null);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
@@ -75,6 +124,8 @@ export default async function PedidoPage({ params }: { params: Promise<{ order_n
           Assim que o Mercado Pago confirmar o pagamento (PIX é quase instantâneo; boleto pode levar até 3 dias úteis), o status muda automaticamente.
         </p>
       ) : null}
+
+      {confirmation && order.status !== "canceled" ? <ArteENota c={confirmation} /> : null}
 
       <div className={`${storeCard} mt-6`}>
         <OrderStatusTimeline status={order.status} />

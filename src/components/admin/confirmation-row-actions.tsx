@@ -3,36 +3,93 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { cancelConfirmationAction } from "@/app/admin/confirmacoes/actions";
-import { adminBtnSoft, adminBtnWine, adminInput } from "@/components/admin/ui-styles";
+import { adminBtnSoft, adminBtnWine } from "@/components/admin/ui-styles";
+import { whatsappLink } from "@/lib/format";
 
-export function ConfirmationLinkBox({ id, url }: { id: string; url: string }) {
+const smallBtn = "px-3.5 py-2 text-[13px]";
+
+function Icon({ d, className = "h-4 w-4" }: { d: string; className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d={d} />
+    </svg>
+  );
+}
+
+const ICON = {
+  copy: "M9 9h10v10H9zM5 15V5h10",
+  check: "M5 12l5 5L20 7",
+  open: "M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5",
+  chat: "M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.9A8 8 0 1 1 21 12z",
+};
+
+function useCopy() {
   const [copied, setCopied] = useState(false);
-  const [canceling, startCancel] = useTransition();
-
-  async function copy() {
+  async function copy(text: string) {
     try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
     } catch {
-      setCopied(false);
+      // navegador sem permissão de área de transferência: cai no método antigo
+      const area = document.createElement("textarea");
+      area.value = text;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      area.remove();
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
+  return { copied, copy };
+}
+
+/** Botãozinho de copiar ao lado de um dado (CNPJ, endereço...). */
+export function CopyValue({ value, label = "Copiar" }: { value: string; label?: string }) {
+  const { copied, copy } = useCopy();
+  return (
+    <button
+      type="button"
+      onClick={() => copy(value)}
+      title={label}
+      aria-label={label}
+      className={`grid h-7 w-7 shrink-0 place-items-center rounded-md transition-colors ${copied ? "text-ok" : "text-ink/35 hover:bg-wine-tint hover:text-wine"}`}
+    >
+      <Icon d={copied ? ICON.check : ICON.copy} className="h-3.5 w-3.5" />
+    </button>
+  );
+}
+
+/** Link do cliente com copiar, abrir e mandar no WhatsApp em um clique. */
+export function ConfirmationLinkActions({ id, url, customer, highlight = false }: { id: string; url: string; customer: string; highlight?: boolean }) {
+  const { copied, copy } = useCopy();
+  const [canceling, startCancel] = useTransition();
+  const message = `Olá, ${customer}! Segue o link para conferir e confirmar o seu pedido com a Salmar Personalizados: ${url}`;
 
   return (
-    <div className="flex flex-col gap-2.5">
-      <p className="text-[12.5px] font-semibold text-ink">Link para enviar ao cliente</p>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input readOnly value={url} onFocus={(event) => event.target.select()} className={`${adminInput} font-mono text-[12.5px]`} />
-        <button type="button" onClick={copy} className={`${adminBtnWine} shrink-0`}>
-          {copied ? "Copiado!" : "Copiar link"}
-        </button>
-      </div>
+    <div className={`flex flex-col gap-3 rounded-xl border p-3.5 ${highlight ? "border-wine/30 bg-wine-tint/40" : "border-line bg-paper"}`}>
+      <button
+        type="button"
+        onClick={() => copy(url)}
+        title="Clique para copiar"
+        className="truncate rounded-lg border border-line bg-white px-3 py-2 text-left font-mono [contain:inline-size] text-[12.5px] text-ink/70 transition-colors hover:border-wine"
+      >
+        {url}
+      </button>
       <div className="flex flex-wrap gap-2">
-        <a href={url} target="_blank" rel="noopener" className={`${adminBtnSoft} px-3.5 py-2 text-[13px]`}>
-          Ver como o cliente vê
+        <button type="button" onClick={() => copy(url)} className={`${copied ? adminBtnWine.replace("bg-wine", "bg-ok") : adminBtnWine} ${smallBtn}`}>
+          <Icon d={copied ? ICON.check : ICON.copy} />
+          {copied ? "Link copiado!" : "Copiar link"}
+        </button>
+        <a href={url} target="_blank" rel="noopener" className={`${adminBtnSoft} ${smallBtn}`}>
+          <Icon d={ICON.open} />
+          Abrir
         </a>
-        <Link href={`/admin/confirmacoes/${id}/editar`} className={`${adminBtnSoft} px-3.5 py-2 text-[13px]`}>
+        <a href={whatsappLink(null, message)} target="_blank" rel="noopener" className={`${adminBtnSoft} ${smallBtn}`}>
+          <Icon d={ICON.chat} />
+          Enviar no WhatsApp
+        </a>
+        <span className="hidden flex-1 sm:block" />
+        <Link href={`/admin/confirmacoes/${id}/editar`} className={`${adminBtnSoft} ${smallBtn}`}>
           Editar
         </Link>
         <button
@@ -42,7 +99,7 @@ export function ConfirmationLinkBox({ id, url }: { id: string; url: string }) {
             if (!window.confirm("Cancelar esta confirmação? O link deixa de funcionar para o cliente.")) return;
             startCancel(() => cancelConfirmationAction(id));
           }}
-          className={`${adminBtnSoft} px-3.5 py-2 text-[13px] hover:border-destructive hover:text-destructive`}
+          className={`${adminBtnSoft} ${smallBtn} hover:border-destructive hover:text-destructive`}
         >
           {canceling ? "Cancelando…" : "Cancelar"}
         </button>

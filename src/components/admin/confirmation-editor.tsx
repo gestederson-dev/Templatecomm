@@ -84,7 +84,8 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
   );
   const [rateText, setRateText] = useState(String(payment.cardRate).replace(".", ","));
   const [notes, setNotes] = useState(initial?.notes ?? DEFAULT_NOTES);
-  const [pickId, setPickId] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(!initial);
+  const [pickSearch, setPickSearch] = useState("");
 
   const [uploadingKey, setUploadingKey] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<{
@@ -98,9 +99,10 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
     setRows((prev) => prev.map((row) => (row.key === key ? { ...row, ...patch } : row)));
   }
 
-  function addFromCatalog() {
-    const product = products.find((p) => p.id === pickId);
-    if (!product) return;
+  const term = pickSearch.trim().toLowerCase();
+  const filteredProducts = term ? products.filter((p) => p.name.toLowerCase().includes(term)) : products;
+
+  function addFromCatalog(product: ConfirmationProductOption) {
     setRows((prev) => [
       ...prev,
       newRow({
@@ -109,7 +111,8 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
         imageUrl: product.imageUrl ?? "",
       }),
     ]);
-    setPickId("");
+    setPickerOpen(false);
+    setPickSearch("");
   }
 
   function uploadImage(key: number, file: File) {
@@ -164,33 +167,77 @@ export function ConfirmationEditor({ products, initial }: { products: Confirmati
             className={adminInput}
             maxLength={120}
           />
-          <p className="mt-1.5 text-xs text-ink/52">
-            Aparece no topo da página: “Olá, {customerLabel.trim() || "Compec"}
-            ”.
-          </p>
+          <p className="mt-1.5 text-xs text-ink/52">Aparece no topo da página: “Olá, {customerLabel.trim() || "Compec"}”.</p>
         </div>
       </div>
 
       <div className={`${adminCard} flex flex-col gap-3.5`}>
         <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold">Produtos</h2>
         <div className="flex flex-col gap-2.5 sm:flex-row">
-          <select value={pickId} onChange={(event) => setPickId(event.target.value)} className={`${adminInput} flex-1`}>
-            <option value="">Escolher do catálogo...</option>
-            {products.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex gap-2.5">
-            <button type="button" onClick={addFromCatalog} disabled={!pickId} className={`${adminBtnSoft} flex-1 disabled:opacity-40`}>
-              Adicionar
-            </button>
-            <button type="button" onClick={() => setRows((prev) => [...prev, newRow()])} className={`${adminBtnSoft} flex-1 whitespace-nowrap`}>
-              Item avulso
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setPickerOpen((open) => !open)}
+            aria-expanded={pickerOpen}
+            className={`${adminBtnSoft} flex-1 justify-between ${pickerOpen ? "border-wine text-wine" : ""}`}
+          >
+            <span>Escolher do catálogo ({products.length})</span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className={`h-4 w-4 transition-transform ${pickerOpen ? "rotate-180" : ""}`}
+              aria-hidden
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <button type="button" onClick={() => setRows((prev) => [...prev, newRow()])} className={`${adminBtnSoft} whitespace-nowrap`}>
+            + Item avulso
+          </button>
         </div>
+
+        {pickerOpen ? (
+          <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-paper p-3">
+            <input
+              autoFocus
+              value={pickSearch}
+              onChange={(event) => setPickSearch(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setPickerOpen(false);
+                if (event.key === "Enter") event.preventDefault();
+              }}
+              placeholder="Buscar produto..."
+              className={`${adminInput} bg-white`}
+            />
+            <div className="grid max-h-80 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+              {filteredProducts.length === 0 ? <p className="p-2 text-sm text-ink/45">Nenhum produto encontrado.</p> : null}
+              {filteredProducts.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => addFromCatalog(p)}
+                  className="flex items-center gap-3 rounded-lg border border-line bg-white p-2 text-left transition-colors hover:border-wine hover:bg-wine-tint/30"
+                >
+                  <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-line bg-paper">
+                    {p.imageUrl ? (
+                      <Image src={p.imageUrl} alt="" fill sizes="56px" className="object-cover" />
+                    ) : (
+                      <span className="grid h-full place-items-center text-[10px] text-ink/40">Sem foto</span>
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-ink">{p.name}</span>
+                    <span className="block text-xs tabular-nums text-ink/55">{p.basePrice ? formatBRL(p.basePrice) : "Preço a definir"}</span>
+                  </span>
+                  <span className="shrink-0 text-lg font-semibold text-wine" aria-hidden>
+                    +
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {rows.length === 0 ? <p className="text-sm text-ink/45">Nenhum produto adicionado.</p> : null}
 

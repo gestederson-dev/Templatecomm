@@ -119,3 +119,11 @@ export async function logoDownloadUrl(path: string, seconds = 60 * 60): Promise<
   const { data } = await supabase.storage.from(LOGO_BUCKET).createSignedUrl(path, seconds, { download: true });
   return data?.signedUrl ?? null;
 }
+
+/** Link temporário para mostrar a logo na tela (só imagens que o navegador exibe). */
+export async function logoPreviewUrl(path: string, seconds = 60 * 60): Promise<string | null> {
+  if (!/\.(png|jpe?g|webp|svg)$/i.test(path)) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.storage.from(LOGO_BUCKET).createSignedUrl(path, seconds);
+  return data?.signedUrl ?? null;
+}

@@ -2,7 +2,8 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-export type ConfirmationItem = { name: string; description?: string; quantity: number; unit_price: number };
+// image_url: caminho em /public (ex.: /confirmacoes/copo-termico-473.jpg) ou foto de produto do Storage
+export type ConfirmationItem = { name: string; description?: string; quantity: number; unit_price: number; image_url?: string };
 export type PaymentOption = { id: string; label: string; amount: number; note?: string };
 
 export type OrderConfirmation = {

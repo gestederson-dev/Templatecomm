@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { confirmationTotal, getConfirmationByToken } from "@/lib/confirmations";
 import { formatBRL } from "@/lib/format";
@@ -32,8 +33,19 @@ export default async function ConfirmarPedidoPage({ params }: { params: Promise<
         <h2 className={storeSectionTitle}>Resumo do pedido</h2>
         <ul className="mt-4 flex flex-col divide-y divide-ink/8">
           {confirmation.items.map((item, index) => (
-            <li key={index} className="flex flex-col gap-1 py-3 first:pt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-              <div>
+            <li key={index} className="flex flex-col gap-3 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+              {item.image_url ? (
+                <a
+                  href={item.image_url}
+                  target="_blank"
+                  rel="noopener"
+                  title="Ver foto ampliada"
+                  className="relative block aspect-square w-44 shrink-0 overflow-hidden rounded-xl bg-paper sm:w-28"
+                >
+                  <Image src={item.image_url} alt={item.name} fill sizes="176px" className="object-cover" />
+                </a>
+              ) : null}
+              <div className="flex-1">
                 <p className="font-semibold text-ink">{item.name}</p>
                 {item.description ? <p className="mt-0.5 text-sm text-ink/60">{item.description}</p> : null}
               </div>

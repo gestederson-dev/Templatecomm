@@ -10,6 +10,29 @@ function layout(title: string, bodyHtml: string): string {
   `;
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** Aviso pra loja quando o cliente preenche a confirmação de pedido. Tudo que veio do cliente é escapado. */
+export function confirmationReceivedEmail(
+  customerLabel: string,
+  lines: [string, string][],
+  adminUrl: string,
+): { subject: string; html: string } {
+  const rows = lines
+    .map(([label, value]) => `<tr><td style="padding:4px 12px 4px 0;color:#898781;">${escapeHtml(label)}</td><td style="padding:4px 0;">${escapeHtml(value)}</td></tr>`)
+    .join("");
+  return {
+    subject: `Confirmação de pedido preenchida — ${customerLabel}`,
+    html: layout(
+      `${escapeHtml(customerLabel)} confirmou o pedido`,
+      `<table style="font-size:14px;border-collapse:collapse;">${rows}</table>
+       <p style="margin-top:16px;"><a href="${adminUrl}">Ver no painel e baixar a logo</a></p>`,
+    ),
+  };
+}
+
 export function orderConfirmedEmail(orderNumber: string, total: number): { subject: string; html: string } {
   return {
     subject: `Pagamento confirmado — pedido ${orderNumber}`,

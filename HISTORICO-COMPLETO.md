@@ -65,7 +65,7 @@ original), `roteiro-fases.md`, `identidade visual/design-system (1).md`.
 | 04/08 | Área de **Fiado** (contas a receber de clientes), com edição rápida de pago e pendente |
 | 06/08 | Ativo separado de publicado; gráfico de faturamento redesenhado |
 | 18/09 | Frete parou: o token do Melhor Envio expirou depois de semanas sem uso. Corrigido (commit ef87b34), ver pendências |
-| 23/11 | **Confirmação de pedido por link** (`/confirmar/[token]`): o cliente que fechou vê o resumo com foto, escolhe pagamento, anexa a logo, diz se quer nota fiscal e preenche os dados. Respostas em Admin > Confirmações. Primeiro uso: Compec, 130 copos térmicos a R$ 26,90 |
+| 23/11 | **Confirmação de pedido por link** (`/confirmar/[token]`): o cliente que fechou vê o resumo com foto, escolhe pagamento, anexa a logo, diz se quer nota fiscal e preenche os dados. Respostas em Admin > Confirmações. Primeiro uso: Compec, 130 copos térmicos a R$ 26,90, preço ajustado no mesmo dia para R$ 25,90 (Pix R$ 3.367,00; cartão 5x R$ 3.642,76) |
 
 ## 5. O que o site tem hoje
 

@@ -1,5 +1,7 @@
+import Link from "next/link";
+import { ConfirmationLinkBox } from "@/components/admin/confirmation-row-actions";
 import { StatusPill, type PillTone } from "@/components/admin/status-pill";
-import { adminCard, adminInput } from "@/components/admin/ui-styles";
+import { adminBtnAmber, adminCard } from "@/components/admin/ui-styles";
 import { confirmationTotal, confirmationUrl, listConfirmations, logoDownloadUrl, type OrderConfirmation } from "@/lib/confirmations";
 import { formatBRL } from "@/lib/format";
 import { formatarCNPJ, formatarCPF } from "@/lib/validators/documento";
@@ -19,16 +21,29 @@ function Linha({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export default async function AdminConfirmacoesPage() {
+export default async function AdminConfirmacoesPage({ searchParams }: { searchParams: Promise<{ criada?: string; editada?: string }> }) {
+  const { criada, editada } = await searchParams;
   const confirmations = await listConfirmations();
   const logos = await Promise.all(confirmations.map((c) => (c.logo_path ? logoDownloadUrl(c.logo_path) : null)));
+  const destaque = criada ?? editada;
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Confirmações de pedido</h1>
-        <p className="mt-0.5 text-[13px] text-ink/52">Links enviados aos clientes que fecharam, com a resposta de cada um.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-[family-name:var(--font-display)] text-[26px] font-bold tracking-[-0.02em]">Confirmações de pedido</h1>
+          <p className="mt-0.5 text-[13px] text-ink/52">Links enviados aos clientes que fecharam, com a resposta de cada um.</p>
+        </div>
+        <Link href="/admin/confirmacoes/nova" className={adminBtnAmber}>
+          + Nova confirmação
+        </Link>
       </div>
+
+      {destaque ? (
+        <p className="rounded-xl border border-wine/25 bg-wine-tint/50 px-4 py-3 text-sm text-wine">
+          {criada ? "Confirmação criada. Copie o link abaixo e envie ao cliente." : "Alterações salvas. O link continua o mesmo."}
+        </p>
+      ) : null}
 
       {confirmations.length === 0 ? <p className={`${adminCard} text-sm text-ink/52`}>Nenhuma confirmação criada ainda.</p> : null}
 
@@ -36,7 +51,7 @@ export default async function AdminConfirmacoesPage() {
         const pagamento = c.payment_options.find((option) => option.id === c.payment_choice);
         const doc = c.document ? (c.document.length === 11 ? formatarCPF(c.document) : formatarCNPJ(c.document)) : null;
         return (
-          <article key={c.id} className={`${adminCard} flex flex-col gap-3`}>
+          <article key={c.id} className={`${adminCard} flex flex-col gap-3 ${c.id === destaque ? "ring-2 ring-wine/40" : ""}`}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-[family-name:var(--font-display)] text-lg font-bold">{c.customer_label}</p>
@@ -47,12 +62,7 @@ export default async function AdminConfirmacoesPage() {
               <StatusPill tone={STATUS[c.status].tone}>{STATUS[c.status].label}</StatusPill>
             </div>
 
-            {c.status === "pendente" ? (
-              <div>
-                <p className="mb-1.5 text-[12.5px] font-semibold text-ink">Link para enviar ao cliente</p>
-                <input readOnly value={confirmationUrl(c.token)} className={`${adminInput} font-mono text-[12.5px]`} />
-              </div>
-            ) : null}
+            {c.status === "pendente" ? <ConfirmationLinkBox id={c.id} url={confirmationUrl(c.token)} /> : null}
 
             {c.status === "respondido" ? (
               <dl className="divide-y divide-line border-t border-line pt-1.5">

@@ -3,8 +3,19 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 // image_url: caminho em /public (ex.: /confirmacoes/copo-termico-473.jpg) ou foto de produto do Storage
-export type ConfirmationItem = { name: string; description?: string; quantity: number; unit_price: number; image_url?: string };
-export type PaymentOption = { id: string; label: string; amount: number; note?: string };
+export type ConfirmationItem = {
+  name: string;
+  description?: string;
+  quantity: number;
+  unit_price: number;
+  image_url?: string;
+};
+export type PaymentOption = {
+  id: string;
+  label: string;
+  amount: number;
+  note?: string;
+};
 
 export type OrderConfirmation = {
   id: string;
@@ -60,6 +71,46 @@ export async function listConfirmations(): Promise<OrderConfirmation[]> {
   const { data, error } = await supabase.from("order_confirmations").select("*").order("created_at", { ascending: false });
   if (error) throw new Error(`Falha ao listar confirmações: ${error.message}`);
   return data ?? [];
+}
+
+export async function getConfirmationById(id: string): Promise<OrderConfirmation | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("order_confirmations").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`Falha ao ler confirmação: ${error.message}`);
+  return data;
+}
+
+export type ConfirmationProductOption = {
+  id: string;
+  name: string;
+  basePrice: number | null;
+  imageUrl: string | null;
+};
+
+/** Produtos ativos com a foto principal, para preencher um item da confirmação com um clique. */
+export async function getConfirmationProductOptions(): Promise<ConfirmationProductOption[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, name, base_price, product_images(url, is_primary, sort_order)")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+  if (error) throw new Error(`Falha ao listar produtos: ${error.message}`);
+  type Row = {
+    id: string;
+    name: string;
+    base_price: number | null;
+    product_images: { url: string; is_primary: boolean; sort_order: number }[] | null;
+  };
+  return ((data ?? []) as Row[]).map((row) => {
+    const images = [...(row.product_images ?? [])].sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order);
+    return {
+      id: row.id,
+      name: row.name,
+      basePrice: row.base_price,
+      imageUrl: images[0]?.url ?? null,
+    };
+  });
 }
 
 /** Link temporário pra baixar a logo (bucket privado, leitura só admin). */
